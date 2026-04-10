@@ -1,0 +1,23 @@
+server_url: https://headscale.oriom.dev
+listen_addr: 0.0.0.0:8080
+metrics_listen_addr: 0.0.0.0:9090
+grpc_listen_addr: 0.0.0.0:50443
+grpc_allow_insecure: false
+private_key_path: /var/lib/headscale/private.key
+noise:
+  private_key_path: /var/lib/headscale/noise_private.key
+prefixes:
+  v4: 100.64.0.0/10
+  v6: fd7a:115c:a1e0::/48
+derp:
+  server:
+    enabled: false # 自前でDERPを立てない場合はfalse
+  urls:
+    - https://controlplane.tailscale.com/derpmap/default
+sqlite:
+  path: /var/lib/headscale/db.sqlite
+dns:
+  magic_dns: true
+  base_domain: mycluster.net # 任意の内部ドメイン名
+  nameservers:
+    - 1.1.1.1

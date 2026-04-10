@@ -1,0 +1,21 @@
+[Unit]
+Description=Minecraft Server (@SERVER_NAME@)
+Requires=mc-@SERVER_NAME@-sidecar.service
+After=mc-@SERVER_NAME@-sidecar.service
+
+[Container]
+Image=docker.io/itzg/minecraft-server:latest
+Volume=@HOME_DIR@/.local/share/mc-data/@SERVER_NAME@:/data:Z
+Network=container:mc-@SERVER_NAME@-sidecar
+
+EnvironmentFile=@SECRETS_PATH@
+Environment=EULA=TRUE
+Environment=TYPE=PAPER
+Environment=ENABLE_RCON=true
+
+# Velocity経由の接続を許可
+Environment=ONLINE_MODE=falseEnvironment=ENABLE_VELOCITY_SUPPORT=true
+Environment=VELOCITY_SECRET=${VELOCITY_FORWARDING_SECRET}
+
+[Install]
+WantedBy=default.target

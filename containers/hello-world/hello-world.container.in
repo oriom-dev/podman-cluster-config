@@ -1,0 +1,19 @@
+[Unit]
+Description=Hello World (Next.js) Application
+Requires=tailscale-sidecar.service
+After=tailscale-sidecar.service
+
+[Container]
+# ハッシュ値が変更されるとイメージ名が変わり、自動的に再ビルドがトリガーされます
+Image=localhost/hello-world:@COMMIT_HASH@
+
+# SOPSで復号されたシークレットファイルを読み込む
+EnvironmentFile=@SECRETS_PATH@
+
+Network=container:tailscale-sidecar
+
+[Build]
+File=@HOME_DIR@/.config/containers/build/hello-world/Containerfile
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=Tailscale Sidecar for @APP_NAME@
+
+[Container]
+Image=docker.io/tailscale/tailscale:latest
+AddDevice=/dev/net/tun
+AddCapability=NET_ADMIN
+AddCapability=NET_RAW
+Environment=TS_USERSPACE=false
+# アプリ名をそのままMagicDNSのホスト名として登録
+Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=@APP_NAME@
+Volume=@APP_NAME@_tailscale_state:/var/lib/tailscale:Z
+Network=cluster.network
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=Caddy Reverse Proxy
+Requires=caddy-tailscale.service
+After=caddy-tailscale.service
+
+[Container]
+Image=docker.io/library/caddy:alpine
+# %h を用いて設定ファイルをマウント
+Volume=%h/.config/caddy/Caddyfile:/etc/caddy/Caddyfile:Z
+Volume=caddy_data:/data
+Volume=caddy_config:/config
+# 専用サイドカーのネットワークに乗り入れ
+Network=container:caddy-tailscale
+
+[Install]
+WantedBy=default.target

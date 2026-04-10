@@ -1,0 +1,22 @@
+{
+    servers {
+        protocols h1 h2 h3
+    }
+}
+
+# example.oriom.dev {
+#     # 例: 100.64.0.2 のポート3000で動いているNode.js
+#     reverse_proxy 100.64.0.2:3000
+# }
+
+# Headscaleコントロールプレーン
+headscale.oriom.dev {
+    reverse_proxy headscale:8080
+}
+
+app2.example.dev {
+    reverse_proxy 100.64.0.3:3000
+}
+
+# マイクラなどのWeb以外の通信は、Caddyを経由せず
+# Headscale側のACL（Access Control List）で各ノード間のポート通信を許可して直接繋ぎます。

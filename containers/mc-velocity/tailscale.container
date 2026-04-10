@@ -1,0 +1,16 @@
+[Unit]
+Description=Tailscale Sidecar for Velocity Ingress
+
+[Container]
+Image=docker.io/tailscale/tailscale:latest
+AddDevice=/dev/net/tun
+AddCapability=NET_ADMIN
+AddCapability=NET_RAW
+Environment=TS_USERSPACE=false
+Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=mc-ingress
+Volume=mc_velocity_ts_state:/var/lib/tailscale:Z
+Network=cluster.network
+
+# 外部からのマインクラフト接続を受け付ける
+PublishPort=0.0.0.0:25565:25565/tcp
+PublishPort=[::]:25565:25565/tcp

@@ -1,0 +1,32 @@
+FROM docker.io/library/node:18-alpine AS builder
+WORKDIR /app
+
+# 依存関係（git）のインストール
+RUN apk add --no-cache git
+
+# キャッシュバスターとしての役割を果たす環境変数
+ENV COMMIT_HASH=@COMMIT_HASH@
+
+# Next.js公式リポジトリのクローンとハッシュの固定
+RUN git clone https://github.com/vercel/next.js.git . && \
+    git checkout @COMMIT_HASH@
+
+# サブディレクトリへ移動してビルド
+WORKDIR /app/examples/hello-world
+RUN npm install && npm run build
+
+# --- ランタイム環境 ---
+FROM docker.io/library/node:18-alpine AS runner
+WORKDIR /app
+
+# 実行に必要なファイル群をビルダーからコピー
+COPY --from=builder /app/examples/hello-world/package.json ./
+COPY --from=builder /app/examples/hello-world/node_modules ./node_modules
+COPY --from=builder /app/examples/hello-world/.next ./.next
+COPY --from=builder /app/examples/hello-world/public ./public
+
+# Next.jsのデフォルトポート
+EXPOSE 3000
+
+# 本番モードで起動
+CMD ["npm", "start"]

@@ -1,0 +1,17 @@
+{
+    servers {
+        protocols h1 h2 h3
+    }
+}
+
+headscale.oriom.dev {
+    reverse_proxy headscale:8080
+}
+
+hello.oriom.dev {
+    reverse_proxy hello-world:3000
+}
+
+jpost.oriom.dev {
+    reverse_proxy jpost-api:8080
+}

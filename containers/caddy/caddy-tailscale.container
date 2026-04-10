@@ -1,0 +1,25 @@
+[Unit]
+Description=Tailscale Sidecar for Caddy Ingress
+
+[Container]
+Image=docker.io/tailscale/tailscale:latest
+AddDevice=/dev/net/tun
+AddCapability=NET_ADMIN
+AddCapability=NET_RAW
+Environment=TS_USERSPACE=false
+# Caddy専用のMagicDNS名を設定
+Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=caddy-ingress
+Volume=caddy_tailscale_state:/var/lib/tailscale:Z
+# Headscaleと通信するための基盤ネットワーク
+Network=cluster.network
+
+# ホスト(VPS)のWebポートを公開 (デュアルスタック対応)
+PublishPort=[::]:80:80/tcp
+PublishPort=[::]:443:443/tcp
+PublishPort=[::]:443:443/udp
+PublishPort=0.0.0.0:80:80/tcp
+PublishPort=0.0.0.0:443:443/tcp
+PublishPort=0.0.0.0:443:443/udp
+
+[Install]
+WantedBy=default.target

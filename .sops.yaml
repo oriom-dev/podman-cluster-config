@@ -1,0 +1,7 @@
+keys:
+  - &vps_key age18y284xarccjmxpyl9x95ve0qlfqkg2efgdhl6kqxn3p83sczp42q2cjyjj
+creation_rules:
+  - path_regex: containers/.*/secrets\.yaml$
+    key_groups:
+    - age:
+      - *vps_key
