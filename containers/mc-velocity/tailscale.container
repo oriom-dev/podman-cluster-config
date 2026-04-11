@@ -8,7 +8,7 @@ AddCapability=NET_ADMIN
 AddCapability=NET_RAW
 Environment=TS_USERSPACE=false
 # MagicDNS名を mc-ingress に固定
-Environment=TS_EXTRA_ARGS=--login-server=https://headscale.example.dev --hostname=mc-ingress
+Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=mc-velocity
 Volume=%h/.local/share/mc-velocity/tailscale:/var/lib/tailscale:Z
 Network=cluster.network
 
