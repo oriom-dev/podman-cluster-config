@@ -31,5 +31,15 @@ in
     default_rootless_network_cmd = "pasta"
   '';
 
-  ".config/systemd/user-generators/podman-user-generator".source = "${pkgs.podman}/lib/systemd/user-generators/podman-user-generator";
+  home.file = helper.quadletGenerator;
+  home.activation.startPodmanServices = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    PATH="${pkgs.systemd}/bin:$PATH"
+    
+    echo "Reloading systemd daemon..."
+    $DRY_RUN_CMD systemctl --user daemon-reload
+    
+    echo "Starting container services..."
+    # リストに挙げたサービス群を一括で起動（既に動いているものはスキップ・または再起動）
+    $DRY_RUN_CMD systemctl --user start ${builtins.concatStringsSep ".service " activeServices}.service || true
+  '';
 }
