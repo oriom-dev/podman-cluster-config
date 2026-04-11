@@ -49,6 +49,10 @@ in
     }
   '';
 
+  xdg.configFile."containers/registries.conf".text = ''
+    unqualified-search-registries = ["docker.io"]
+  '';
+
   home.activation.startPodmanServices = lib.hm.dag.entryAfter ["writeBoundary"] ''
     PATH="${pkgs.systemd}/bin:${pkgs.podman}/bin:$PATH"
     
