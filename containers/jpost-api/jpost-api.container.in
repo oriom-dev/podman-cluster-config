@@ -8,7 +8,7 @@ Image=localhost/jpost-api:latest
 EnvironmentFile=@SECRETS_PATH@
 Network=container:@APP_NAME@-tailscale
 
-ImagePullPolicy=missing
+Pull=never
 
 [Build]
 File=%h/.config/containers/build/jpost-api/src/Containerfile
