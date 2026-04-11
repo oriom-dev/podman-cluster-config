@@ -2,4 +2,4 @@
 Description=Cluster Internal Network
 
 [Network]
-# IPv6=true
+IPv6=true
