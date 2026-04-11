@@ -13,12 +13,4 @@
         if vars == {} then templateContent
         else builtins.replaceStrings keys values templateContent;
     };
-    
-  # systemdがQuadletを認識するための必須設定
-  quadletGenerator = {
-    ".config/systemd/user-generators/podman-user-generator" = {
-      source = "${pkgs.podman}/lib/systemd/user-generators/podman-user-generator";
-      executable = true;
-    };
-  };
 }
