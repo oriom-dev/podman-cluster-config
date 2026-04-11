@@ -1,0 +1,32 @@
+[Unit]
+Description=Minecraft Backup (@SERVER_NAME@)
+# バックアップコンテナは、マイクラ本体が起動した後に起動する必要があります
+Requires=mc-@SERVER_NAME@.service
+After=mc-@SERVER_NAME@.service
+
+[Container]
+Image=docker.io/itzg/mc-backup:latest
+
+# 1. 本体のデータディレクトリを「読み取り専用(ro)」でマウント（安全性の確保）
+Volume=%h/.local/share/mc-data/@SERVER_NAME@:/data:ro
+
+# 2. バックアップの出力先ディレクトリをマウント
+Volume=%h/.local/share/mc-backups/@SERVER_NAME@:/backups:Z
+
+# 3. 本体と同じサイドカーのネットワーク名前空間に乗り入れる
+Network=container:mc-@SERVER_NAME@-sidecar
+
+# RCONパスワード等が記述されたシークレットファイルを読み込む
+EnvironmentFile=@SECRETS_PATH@
+
+# 同じネットワークにいるため、RCONの接続先はlocalhostで通ります
+Environment=RCON_HOST=localhost
+
+# バックアップの実行スケジュール (Cron構文: 毎日午前4時に実行)
+Environment=BACKUP_CRON="0 4 * * *"
+
+# 古いバックアップの保持期間 (7日経過したものは自動削除)
+Environment=PRUNE_BACKUPS_DAYS=7
+
+[Install]
+WantedBy=default.target
