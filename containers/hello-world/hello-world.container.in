@@ -9,6 +9,8 @@ Image=localhost/hello-world:@COMMIT_HASH@
 
 Network=container:@APP_NAME@-tailscale
 
+ImagePullPolicy=missing
+
 [Build]
 File=%h/.config/containers/build/hello-world/Containerfile
 

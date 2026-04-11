@@ -27,7 +27,8 @@ in
       };
     } // 
     {
-      # 静的ファイルとして純粋にコピーするだけ
       ".config/velocity/velocity.toml".source = ./velocity.toml;
+      ".local/share/mc-velocity/tailscale/.keep".text = "";
+      ".local/share/mc-velocity/data/.keep".text = "";
     };
 }
