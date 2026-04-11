@@ -16,8 +16,8 @@
     
   # systemdがQuadletを認識するための必須設定
   quadletGenerator = {
-    ".config/systemd/user-generators/podman-system-generator" = {
-      source = "${pkgs.podman}/lib/systemd/system-generators/podman-system-generator";
+    ".config/systemd/user-generators/podman-user-generator" = {
+      source = "${pkgs.podman}/lib/systemd/user-generators/podman-user-generator";
       executable = true;
     };
   };
