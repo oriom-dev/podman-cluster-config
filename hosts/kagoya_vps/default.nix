@@ -30,4 +30,6 @@ in
     [network]
     default_rootless_network_cmd = "pasta"
   '';
+
+  ".config/systemd/user-generators/podman-user-generator".source = "${pkgs.podman}/lib/systemd/user-generators/podman-user-generator";
 }
