@@ -1,10 +1,15 @@
 { config, pkgs, lib, ... }:
+
 let
   helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
   appName = "mc-velocity";
 in
 {
-  sops.secrets."${appName}_secrets" = { sopsFile = ./secrets.yaml; format = "yaml"; };
+  # シークレットの設定
+  sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
+
+  # 自動起動リストへの申告
+  podman.activeServices = [ "${appName}-tailscale" appName ];
 
   home.file = 
     # サイドカー
@@ -16,12 +21,12 @@ in
     helper.mkQuadlet {
       name = appName;
       templatePath = ./mc-velocity.container;
+      vars = {
+        "@SECRETS_PATH@" = config.sops.secrets."${appName}_env".path;
+      };
     } // 
     {
-      # パスワードを注入する特有の設定
-      ".config/velocity/velocity.toml".text = builtins.replaceStrings 
-        [ "@FORWARDING_SECRET@" ] 
-        [ config.sops.placeholder."${appName}_secrets" ] 
-        (builtins.readFile ./velocity.toml.in);
+      # 静的ファイルとして純粋にコピーするだけ
+      ".config/velocity/velocity.toml".source = ./velocity.toml;
     };
 }

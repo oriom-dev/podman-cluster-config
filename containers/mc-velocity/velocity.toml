@@ -15,4 +15,4 @@ example = "mc-example:25565"
 player-info-forwarding-mode = "modern"
 
 # ここにNixからパスワードが注入されます
-forwarding-secret = "@FORWARDING_SECRET@"
+forwarding-secret = "${VELOCITY_FORWARDING_SECRET}"
