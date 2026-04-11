@@ -3,7 +3,7 @@
 let
   appName = "jpost-api";
   
-  sidecarTemplate = builtins.readFile ../shared-templates/app-tailscale.container.in;
+  sidecarTemplate = builtins.readFile ../../templates/http/tailscale.container.in;
   appTemplate = builtins.readFile ./jpost-api.container.in;
   
   secretsPath = config.sops.secrets."${appName}_env".path;
