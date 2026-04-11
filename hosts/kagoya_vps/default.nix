@@ -34,6 +34,21 @@ in
     default_rootless_network_cmd = "pasta"
   '';
 
+  xdg.configFile."containers/policy.json".text = ''
+    {
+      "default": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ],
+      "transports": {
+        "docker-daemon": {
+          "": [{"type":"insecureAcceptAnything"}]
+        }
+      }
+    }
+  '';
+
   home.activation.startPodmanServices = lib.hm.dag.entryAfter ["writeBoundary"] ''
     PATH="${pkgs.systemd}/bin:${pkgs.podman}/bin:$PATH"
     
