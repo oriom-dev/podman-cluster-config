@@ -18,14 +18,14 @@
       "ubuntu@kagoya_vps" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs { system = "x86_64-linux"; };
         modules = [
-          sops-nix.nixosModules.sops
+          sops-nix.homeManagerModules.sops
           ./hosts/kagoya_vps/default.nix
         ];
       };
       "ubuntu@home_desktop" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs { system = "x86_64-linux"; };
         modules = [
-          sops-nix.nixosModules.sops
+          sops-nix.homeManagerModules.sops
           ./hosts/home_desktop/default.nix
         ];
       };
