@@ -22,6 +22,7 @@ in
       name = appName;
       templatePath = ./mc-velocity.container;
       vars = {
+        "@APP_NAME@" = appName;
         "@SECRETS_PATH@" = config.sops.secrets."${appName}_env".path;
       };
     } // 

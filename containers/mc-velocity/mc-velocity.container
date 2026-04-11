@@ -1,7 +1,7 @@
 [Unit]
 Description=Minecraft Velocity Proxy
-Requires=mc-velocity-tailscale.service
-After=mc-velocity-tailscale.service
+Requires=@APP_NAME@-tailscale.service
+After=@APP_NAME@-tailscale.service
 
 [Container]
 Image=docker.io/itzg/mc-proxy:latest
@@ -14,7 +14,7 @@ EnvironmentFile=@SECRETS_PATH@
 Volume=%h/.config/velocity/velocity.toml:/config/velocity.toml:Z
 Volume=%h/.local/share/mc-velocity/data:/data:Z
 # 専用サイドカーのネットワークに乗り入れ
-Network=container:mc-velocity-tailscale
+Network=container:@APP_NAME@-tailscale
 
 [Install]
 WantedBy=default.target

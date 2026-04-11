@@ -1,13 +1,13 @@
 [Unit]
 Description=Hello World (Next.js) Application
-Requires=tailscale-sidecar.service
-After=tailscale-sidecar.service
+Requires=@APP_NAME@-tailscale.service
+After=@APP_NAME@-tailscale.service
 
 [Container]
 # ハッシュ値が変更されるとイメージ名が変わり、自動的に再ビルドがトリガーされます
 Image=localhost/hello-world:@COMMIT_HASH@
 
-Network=container:tailscale-sidecar
+Network=container:@APP_NAME@-tailscale
 
 [Build]
 File=%h/.config/containers/build/hello-world/Containerfile
