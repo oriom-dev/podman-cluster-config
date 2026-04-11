@@ -7,10 +7,22 @@ AddDevice=/dev/net/tun
 AddCapability=NET_ADMIN
 AddCapability=NET_RAW
 Environment=TS_USERSPACE=false
-Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=mc-ingress
-Volume=mc_velocity_ts_state:/var/lib/tailscale:Z
+# MagicDNS名を mc-ingress に固定
+Environment=TS_EXTRA_ARGS=--login-server=https://headscale.example.dev --hostname=mc-ingress
+Volume=%h/.local/share/mc-velocity/tailscale:/var/lib/tailscale:Z
 Network=cluster.network
 
-# 外部からのマインクラフト接続を受け付ける
+# Java Edition (TCP)
 PublishPort=0.0.0.0:25565:25565/tcp
 PublishPort=[::]:25565:25565/tcp
+
+# Bedrock / Geyser (UDP)
+PublishPort=0.0.0.0:19132:19132/udp
+PublishPort=[::]:19132:19132/udp
+
+# Simple Voice Chat (UDP)
+PublishPort=0.0.0.0:24454:24454/udp
+PublishPort=[::]:24454:24454/udp
+
+[Install]
+WantedBy=default.target

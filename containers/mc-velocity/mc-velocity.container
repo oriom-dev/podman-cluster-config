@@ -1,0 +1,17 @@
+[Unit]
+Description=Minecraft Velocity Proxy
+Requires=mc-velocity-tailscale.service
+After=mc-velocity-tailscale.service
+
+[Container]
+Image=docker.io/itzg/mc-proxy:latest
+# 環境変数でメモリ割り当て等を調整可能
+Environment=TYPE=VELOCITY
+Environment=MEMORY=512M
+Volume=%h/.config/velocity/velocity.toml:/config/velocity.toml:Z
+Volume=%h/.local/share/mc-velocity/data:/data:Z
+# 専用サイドカーのネットワークに乗り入れ
+Network=container:mc-velocity-tailscale
+
+[Install]
+WantedBy=default.target

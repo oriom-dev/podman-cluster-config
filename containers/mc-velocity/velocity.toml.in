@@ -1,0 +1,18 @@
+# velocity.toml.in
+[general]
+bind = "0.0.0.0:25565"
+
+[servers]
+lobby = "mc-lobby:25565"
+example = "mc-example:25565"
+
+[forced-hosts]
+"lobby.oriom.dev" = ["lobby"]
+"example.oriom.dev" = ["example"]
+
+[advanced]
+# モダンな転送モードを選択
+player-info-forwarding-mode = "modern"
+
+# ここにNixからパスワードが注入されます
+forwarding-secret = "@FORWARDING_SECRET@"
