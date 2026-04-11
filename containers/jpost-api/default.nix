@@ -6,7 +6,6 @@ let
   sidecarTemplate = builtins.readFile ../shared-templates/app-tailscale.container.in;
   appTemplate = builtins.readFile ./jpost-api.container.in;
   
-  homeDir = config.home.homeDirectory;
   secretsPath = config.sops.secrets."${appName}_env".path;
 in
 {
@@ -23,8 +22,8 @@ in
     # app quadlet
     ".config/containers/systemd/${appName}.container".text = 
       builtins.replaceStrings 
-        [ "@APP_NAME@" "@HOME_DIR@" "@SECRETS_PATH@" ] 
-        [ appName homeDir secretsPath ] 
+        [ "@APP_NAME@" "@SECRETS_PATH@" ] 
+        [ appName secretsPath ] 
         appTemplate;
 
     # container

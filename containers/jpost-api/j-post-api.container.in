@@ -9,8 +9,8 @@ EnvironmentFile=@SECRETS_PATH@
 Network=container:@APP_NAME@-tailscale
 
 [Build]
-File=@HOME_DIR@/.config/containers/build/jpost-api/src/Containerfile
-Context=@HOME_DIR@/.config/containers/build/jpost-api/src
+File=%h/.config/containers/build/jpost-api/src/Containerfile
+Context=%h/.config/containers/build/jpost-api/src
 
 [Install]
 WantedBy=default.target
