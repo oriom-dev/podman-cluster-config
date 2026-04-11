@@ -22,8 +22,6 @@ in
       templatePath = ./hello-world.container.in;
       vars = {
         "@APP_NAME@" = appName;
-        "@HOME_DIR@" = config.home.homeDirectory;
-        "@SECRETS_PATH@" = config.sops.secrets."${appName}_env".path;
         "@COMMIT_HASH@" = ossCommitHash;
       };
     } // 
