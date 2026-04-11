@@ -7,8 +7,6 @@ in
 {
   podman.activeServices = [ "${appName}-tailscale" appName ];
 
-  sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
-
   home.file = 
     # 共通サイドカーテンプレートの呼び出し
     helper.mkQuadlet {
