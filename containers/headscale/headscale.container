@@ -1,0 +1,13 @@
+[Unit]
+Description=Headscale Control Plane
+
+[Container]
+Image=docker.io/headscale/headscale:latest
+Command=headscale serve
+Volume=/home/ubuntu/.config/headscale:/etc/headscale:Z
+Volume=/home/ubuntu/.local/share/headscale:/var/lib/headscale:Z
+Network=cluster.network
+NetworkAlias=headscale
+
+[Install]
+WantedBy=default.target
