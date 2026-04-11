@@ -1,31 +1,27 @@
-{ config, pkgs, ... }:
-
+{ config, pkgs, lib, ... }:
 let
+  helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
   appName = "mc-velocity";
-  
-  # velocity.toml のテンプレートを読み込み
-  velocityTemplate = builtins.readFile ./velocity.toml.in;
 in
 {
-  # このコンテナ専用のシークレットを定義
-  sops.secrets."${appName}_secrets" = {
-    sopsFile = ./secrets.yaml;
-    format = "yaml";
-  };
+  sops.secrets."${appName}_secrets" = { sopsFile = ./secrets.yaml; format = "yaml"; };
 
-  sops.templates."velocity.toml" = {
-    path = "${config.home.homeDirectory}/.config/velocity/velocity.toml";
-    content = builtins.replaceStrings 
-      [ "@FORWARDING_SECRET@" ] 
-      [ "<sops:${appName}_secrets>" ] 
-      velocityTemplate;
-  };
-
-  home.file = {
-    # サイドカー (静的ファイルとして配置)
-    ".config/containers/systemd/${appName}-tailscale.container".source = ./tailscale.container;
-
-    # 本体 (静的ファイルとして配置)
-    ".config/containers/systemd/${appName}.container".source = ./mc-velocity.container;
-  };
+  home.file = 
+    # サイドカー
+    helper.mkQuadlet {
+      name = "${appName}-tailscale";
+      templatePath = ./tailscale.container;
+    } // 
+    # 本体
+    helper.mkQuadlet {
+      name = appName;
+      templatePath = ./mc-velocity.container;
+    } // 
+    {
+      # パスワードを注入する特有の設定
+      ".config/velocity/velocity.toml".text = builtins.replaceStrings 
+        [ "@FORWARDING_SECRET@" ] 
+        [ config.sops.placeholder."${appName}_secrets" ] 
+        (builtins.readFile ./velocity.toml.in);
+    };
 }

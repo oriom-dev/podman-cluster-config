@@ -1,18 +1,40 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 let
+  helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
   serverName = "lobby";
-  sidecarTpl = builtins.readFile ../../templates/minecraft-world/tailscale.container.in;
-  serverTpl = builtins.readFile ../../templates/minecraft-world/world.container.in;
-  homeDir = config.home.homeDirectory;
-in {
+in
+{
+  podman.activeServices = [ 
+    "mc-${serverName}-sidecar" 
+    "mc-${serverName}" 
+    "mc-backup-${serverName}" 
+  ];
+
   sops.secrets."mc_${serverName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
-  
-  home.file = {
-    ".config/containers/systemd/mc-${serverName}-sidecar.container".text = 
-      builtins.replaceStrings ["@SERVER_NAME@"] [serverName] sidecarTpl;
-      
-    ".config/containers/systemd/mc-${serverName}.container".text = 
-      builtins.replaceStrings ["@SERVER_NAME@" "@HOME_DIR@" "@SECRETS_PATH@"] 
-      [serverName homeDir config.sops.secrets."mc_${serverName}_env".path] serverTpl;
-  };
+
+  home.file = 
+    # サイドカー
+    helper.mkQuadlet {
+      name = "mc-${serverName}-sidecar";
+      templatePath = ../../templates/minecraft-world/tailscale.container.in;
+      vars = { "@SERVER_NAME@" = serverName; };
+    } // 
+    # サーバー本体
+    helper.mkQuadlet {
+      name = "mc-${serverName}";
+      templatePath = ../../templates/minecraft-world/world.container.in;
+      vars = {
+        "@SERVER_NAME@" = serverName;
+        "@SECRETS_PATH@" = config.sops.secrets."mc_${serverName}_env".path;
+      };
+    } // 
+    # バックアップコンテナ
+    helper.mkQuadlet {
+      name = "mc-backup-${serverName}";
+      templatePath = ../../templates/minecraft-world/backup.container.in;
+      vars = {
+        "@SERVER_NAME@" = serverName;
+        "@SECRETS_PATH@" = config.sops.secrets."mc_${serverName}_env".path;
+      };
+    };
 }

@@ -1,12 +1,21 @@
-{ config, pkgs, ... }:
-
+{ config, pkgs, lib, ... }:
+let
+  helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
+in
 {
-  home.file = {
-    # サイドカーとCaddy本体のQuadletファイルを配置
-    ".config/containers/systemd/caddy-tailscale.container".source = ./caddy-tailscale.container;
-    ".config/containers/systemd/caddy.container".source = ./caddy.container;
-    
-    # Caddyfileを配置
-    ".config/caddy/Caddyfile".source = ./Caddyfile;
-  };
+  home.file = 
+    # Caddy専用のIngressサイドカー
+    helper.mkQuadlet {
+      name = "caddy-tailscale";
+      templatePath = ./tailscale.container;
+    } // 
+    # Caddy本体
+    helper.mkQuadlet {
+      name = "caddy";
+      templatePath = ./caddy.container;
+    } // 
+    {
+      # Caddyfileの配置
+      ".config/caddy/Caddyfile".source = ./Caddyfile;
+    };
 }

@@ -1,8 +1,10 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
-  # 稼働させるコンテナモジュールのリスト（ここを編集するだけで追加・削除・マイグレーションが完了）
-  activeContainers = [
+  helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
+
+  # 稼働させるコンテナモジュールのリスト（ディレクトリ名のみを列挙）
+  activeModules = [
     "cluster-network"
     "headscale"
     "caddy"
@@ -12,8 +14,9 @@ let
   ];
 in
 {
-  # リスト内の名前から相対パスを生成し、各コンテナの default.nix をインポートする
-  imports = map (name: ../../containers/${name}/default.nix) activeContainers;
+  imports = [
+    ../../lib/podman-options.nix
+  ] ++ map (name: ../../containers/${name}/default.nix) activeModules;
 
   # --- これより下はホストシステム固有の最小設定 ---
   home.username = "ubuntu";
@@ -32,6 +35,7 @@ in
   '';
 
   home.file = helper.quadletGenerator;
+
   home.activation.startPodmanServices = lib.hm.dag.entryAfter ["writeBoundary"] ''
     PATH="${pkgs.systemd}/bin:$PATH"
     
@@ -39,7 +43,10 @@ in
     $DRY_RUN_CMD systemctl --user daemon-reload
     
     echo "Starting container services..."
-    # リストに挙げたサービス群を一括で起動（既に動いているものはスキップ・または再起動）
-    $DRY_RUN_CMD systemctl --user start ${builtins.concatStringsSep ".service " activeServices}.service || true
+    ${if builtins.length config.podman.activeServices > 0 then ''
+      $DRY_RUN_CMD systemctl --user start ${builtins.concatStringsSep ".service " config.podman.activeServices}.service || true
+    '' else ''
+      echo "No services to start."
+    ''}
   '';
 }

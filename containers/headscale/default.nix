@@ -1,9 +1,12 @@
-{ config, pkgs, ... }:
-
+{ config, pkgs, lib, ... }:
+let
+  helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
+in
 {
-  home.file = {
-    ".config/containers/systemd/headscale.container".source = ./headscale.container;
-    # config.yaml を配置
+  home.file = helper.mkQuadlet {
+    name = "headscale";
+    templatePath = ./headscale.container;
+  } // {
     ".config/headscale/config.yaml".source = ./config.yaml;
   };
 }
