@@ -5,6 +5,7 @@ let
 in
 {
   sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
+  podman.activeServices = [ "${appName}-tailscale" "${appName}-image" appName ];
 
   home.file = 
     helper.mkQuadlet {
@@ -13,15 +14,19 @@ in
       vars = { "@APP_NAME@" = appName; };
     } // 
     helper.mkQuadlet {
+      name = "${appName}-image";
+      type = "image";
+      templatePath = ./jpost-api.image;
+    } // 
+    helper.mkQuadlet {
       name = appName;
-      templatePath = ./jpost-api.container.in;
+      templatePath = ./jpost-api.container;
       vars = {
-        "@APP_NAME@" = appName;
         "@SECRETS_PATH@" = config.sops.secrets."${appName}_env".path;
       };
     } // 
     {
-      # ソースコードをビルドコンテキストへ同期
+      ".config/containers/build/${appName}/Containerfile".source = ./Containerfile;
       ".config/containers/build/${appName}/src" = {
         source = ./src;
         recursive = true;

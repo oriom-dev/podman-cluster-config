@@ -1,18 +1,14 @@
 [Unit]
 Description=Hello World (Next.js) Application
-Requires=@APP_NAME@-tailscale.service
-After=@APP_NAME@-tailscale.service
+Requires=hello-world.image.service
+After=hello-world.image.service
+Requires=hello-world-tailscale.service
+After=hello-world-tailscale.service
 
 [Container]
-# ハッシュ値が変更されるとイメージ名が変わり、自動的に再ビルドがトリガーされます
 Image=localhost/hello-world:@COMMIT_HASH@
-
-Network=container:@APP_NAME@-tailscale
-
-Pull=never
-
-[Build]
-File=%h/.config/containers/build/hello-world/Containerfile
+EnvironmentFile=@SECRETS_PATH@
+Network=container:hello-world-tailscale
 
 [Install]
 WantedBy=default.target

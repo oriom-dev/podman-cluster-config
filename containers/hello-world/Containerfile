@@ -1,0 +1,24 @@
+FROM docker.io/library/node:18-alpine AS builder
+RUN apk add --no-cache git
+WORKDIR /app
+
+ARG COMMIT_HASH
+
+# 指定されたコミットとパスからソースを取得
+RUN git clone https://github.com/vercel/next.js.git . && \
+    git checkout $COMMIT_HASH
+
+WORKDIR /app/examples/hello-world
+RUN npm ci && npm run build
+
+# 実行ステージ
+FROM docker.io/library/node:18-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV production
+COPY --from=builder /app/examples/hello-world/public ./public
+COPY --from=builder /app/examples/hello-world/.next ./.next
+COPY --from=builder /app/examples/hello-world/node_modules ./node_modules
+COPY --from=builder /app/examples/hello-world/package.json ./package.json
+
+EXPOSE 3000
+CMD ["npm", "start"]

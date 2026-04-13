@@ -2,30 +2,36 @@
 let
   helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
   appName = "hello-world";
-  ossCommitHash = "61136d8";
+  ossCommitHash = "d9435b5a2e57ecf7b49bd613e54b67ce4d98a280";
 in
 {
-  podman.activeServices = [ "${appName}-tailscale" appName ];
+  sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
+  podman.activeServices = [ "${appName}-tailscale" "${appName}-image" appName ];
 
   home.file = 
-    # 共通サイドカーテンプレートの呼び出し
+    # サイドカー
     helper.mkQuadlet {
       name = "${appName}-tailscale";
       templatePath = ../../templates/http/tailscale.container.in;
       vars = { "@APP_NAME@" = appName; };
     } // 
-    # アプリ本体
+    # イメージビルド定義
+    helper.mkQuadlet {
+      name = "${appName}-image";
+      type = "image";
+      templatePath = ./hello-world.image.in;
+      vars = { "@COMMIT_HASH@" = ossCommitHash; };
+    } // 
+    # コンテナ本体
     helper.mkQuadlet {
       name = appName;
       templatePath = ./hello-world.container.in;
       vars = {
-        "@APP_NAME@" = appName;
+        "@SECRETS_PATH@" = config.sops.secrets."${appName}_env".path;
         "@COMMIT_HASH@" = ossCommitHash;
       };
     } // 
     {
-      # Containerfileの生成
-      ".config/containers/build/${appName}/Containerfile".text = 
-        builtins.replaceStrings [ "@COMMIT_HASH@" ] [ ossCommitHash ] (builtins.readFile ./Containerfile.in);
+      ".config/containers/build/${appName}/Containerfile".source = ./Containerfile;
     };
 }

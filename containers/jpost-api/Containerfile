@@ -1,0 +1,14 @@
+FROM docker.io/library/node:18-alpine
+WORKDIR /app
+
+# ビルド引数の受け取り
+ARG NODE_ENV
+ENV NODE_ENV=$NODE_ENV
+
+# ローカルからコピーされたソースを使用
+COPY src/package*.json ./
+RUN npm install
+COPY src/ ./
+
+EXPOSE 8080
+CMD ["npm", "start"]

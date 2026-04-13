@@ -1,18 +1,13 @@
 [Unit]
-Description=Japan Post API Relay
-Requires=@APP_NAME@-tailscale.service
-After=@APP_NAME@-tailscale.service
+Description=JPost API Server
+Requires=jpost-api-image.service
+After=jpost-api-image.service
 
 [Container]
-Image=localhost/jpost-api:latest
+Image=localhost/jpost-api
 EnvironmentFile=@SECRETS_PATH@
-Network=container:@APP_NAME@-tailscale
-
+Network=container:jpost-api-tailscale
 Pull=never
-
-[Build]
-File=%h/.config/containers/build/jpost-api/src/Containerfile
-Context=%h/.config/containers/build/jpost-api/src
 
 [Install]
 WantedBy=default.target
