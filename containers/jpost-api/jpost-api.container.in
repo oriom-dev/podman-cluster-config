@@ -7,7 +7,6 @@ After=jpost-api-image.service
 Image=localhost/jpost-api
 EnvironmentFile=@SECRETS_PATH@
 Network=container:jpost-api-tailscale
-Pull=never
 
 [Install]
 WantedBy=default.target

@@ -15,8 +15,8 @@ in
     } // 
     helper.mkQuadlet {
       name = "${appName}-image";
-      type = "image";
-      templatePath = ./jpost-api.image;
+      type = "build";
+      templatePath = ./jpost-api.build;
     } // 
     helper.mkQuadlet {
       name = appName;

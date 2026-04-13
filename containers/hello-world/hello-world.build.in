@@ -1,7 +1,7 @@
 [Unit]
 Description=Build Image for hello-world
 
-[Image]
-ImageName=localhost/hello-world
+[Build]
+ImageTag=localhost/hello-world:@COMMIT_HASH@
 BuildArgs=COMMIT_HASH=@COMMIT_HASH@
 File=%h/.config/containers/build/hello-world/Containerfile

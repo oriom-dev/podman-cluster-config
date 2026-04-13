@@ -1,7 +1,7 @@
 [Unit]
 Description=Build Image for jpost-api
 
-[Image]
-ImageName=localhost/jpost-api
+[Build]
+ImageTag=localhost/jpost-api
 ContainerFile=%h/.config/containers/build/jpost-api/Containerfile
 BuildArgs=NODE_ENV=production

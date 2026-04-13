@@ -17,8 +17,8 @@ in
     # イメージビルド定義
     helper.mkQuadlet {
       name = "${appName}-image";
-      type = "image";
-      templatePath = ./hello-world.image.in;
+      type = "build";
+      templatePath = ./hello-world.build.in;
       vars = { "@COMMIT_HASH@" = ossCommitHash; };
     } // 
     # コンテナ本体
