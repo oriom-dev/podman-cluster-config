@@ -20,7 +20,7 @@ in
     } // 
     helper.mkQuadlet {
       name = appName;
-      templatePath = ./jpost-api.container;
+      templatePath = ./jpost-api.container.in;
       vars = {
         "@SECRETS_PATH@" = config.sops.secrets."${appName}_env".path;
       };
