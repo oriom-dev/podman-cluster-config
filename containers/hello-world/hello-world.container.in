@@ -7,7 +7,6 @@ After=hello-world-tailscale.service
 
 [Container]
 Image=localhost/hello-world:@COMMIT_HASH@
-EnvironmentFile=@SECRETS_PATH@
 Network=container:hello-world-tailscale
 
 [Install]
