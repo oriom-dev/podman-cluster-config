@@ -5,7 +5,7 @@ let
 in
 {
   sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
-  podman.activeServices = [ "${appName}-tailscale" "${appName}-image" appName ];
+  podman.activeServices = [ "${appName}-tailscale" "${appName}-build" appName ];
 
   home.file = 
     helper.mkQuadlet {
@@ -14,7 +14,7 @@ in
       vars = { "@APP_NAME@" = appName; };
     } // 
     helper.mkQuadlet {
-      name = "${appName}-image";
+      name = appName;
       type = "build";
       templatePath = ./jpost-api.build;
     } // 

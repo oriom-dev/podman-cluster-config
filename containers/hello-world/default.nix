@@ -5,7 +5,7 @@ let
   ossCommitHash = "d9435b5a2e57ecf7b49bd613e54b67ce4d98a280";
 in
 {
-  podman.activeServices = [ "${appName}-tailscale" "${appName}-image" appName ];
+  podman.activeServices = [ "${appName}-tailscale" "${appName}-build" appName ];
 
   home.file = 
     # サイドカー
@@ -16,10 +16,12 @@ in
     } // 
     # イメージビルド定義
     helper.mkQuadlet {
-      name = "${appName}-image";
+      name = appName;
       type = "build";
       templatePath = ./hello-world.build.in;
-      vars = { "@COMMIT_HASH@" = ossCommitHash; };
+      vars = {
+        "@COMMIT_HASH@" = ossCommitHash;
+      };
     } // 
     # コンテナ本体
     helper.mkQuadlet {

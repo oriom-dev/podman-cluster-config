@@ -1,7 +1,7 @@
 [Unit]
 Description=Hello World (Next.js) Application
-Requires=hello-world.image.service
-After=hello-world.image.service
+Requires=hello-world-build.service
+After=hello-world-build.service
 Requires=hello-world-tailscale.service
 After=hello-world-tailscale.service
 

@@ -1,7 +1,9 @@
 [Unit]
 Description=JPost API Server
-Requires=jpost-api-image.service
-After=jpost-api-image.service
+Requires=jpost-api-build.service
+After=jpost-api-build.service
+Requires=jpost-api-tailscale.service
+After=jpost-api-tailscale.service
 
 [Container]
 Image=localhost/jpost-api
