@@ -4,7 +4,7 @@ Requires=caddy-tailscale.service
 After=caddy-tailscale.service
 
 [Container]
-Image=docker.io/library/caddy:alpine
+Image=docker.io/library/caddy:latest
 # %h を用いて設定ファイルをマウント
 Volume=%h/.config/caddy/Caddyfile:/etc/caddy/Caddyfile:Z
 Volume=caddy_data:/data
