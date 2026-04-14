@@ -16,6 +16,9 @@ in
     helper.mkQuadlet {
       name = "${appName}-tailscale";
       templatePath = ./tailscale.container;
+      vars = {
+        "@TS_SECRET_PATH@" = config.sops.secrets."tailscale_env".path;
+      };
     } // 
     # 本体
     helper.mkQuadlet {

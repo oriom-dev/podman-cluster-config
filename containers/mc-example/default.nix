@@ -17,7 +17,10 @@ in
     helper.mkQuadlet {
       name = "mc-${serverName}-sidecar";
       templatePath = ../../templates/mc-world/tailscale.container.in;
-      vars = { "@SERVER_NAME@" = serverName; };
+      vars = {
+        "@SERVER_NAME@" = serverName;
+        "@TS_SECRET_PATH@" = config.sops.secrets."tailscale_env".path;
+      };
     } // 
     # サーバー本体
     helper.mkQuadlet {

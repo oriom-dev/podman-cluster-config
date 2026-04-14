@@ -10,6 +10,9 @@ in
     helper.mkQuadlet {
       name = "caddy-tailscale";
       templatePath = ./tailscale.container;
+      vars = {
+        "@TS_SECRET_PATH@" = config.sops.secrets."tailscale_env".path;
+      };
     } // 
     # Caddy本体
     helper.mkQuadlet {

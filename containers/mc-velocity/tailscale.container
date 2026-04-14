@@ -8,6 +8,7 @@ AddCapability=NET_ADMIN
 AddCapability=NET_RAW
 Environment=TS_USERSPACE=false
 Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=mc-velocity
+EnvironmentFile=@TS_SECRET_PATH@
 Volume=%h/.local/share/mc-velocity/tailscale:/var/lib/tailscale:Z
 Network=cluster.network
 PodmanArgs=--replace

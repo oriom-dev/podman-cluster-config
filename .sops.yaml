@@ -2,7 +2,7 @@ keys:
   - &dev_dell2 age1sfug5kynm05ftlwh897nywk5ftwq8s4vvt55fjxqwdp7nqmcu44sqs64d6
   - &kagoya_vps age18y284xarccjmxpyl9x95ve0qlfqkg2efgdhl6kqxn3p83sczp42q2cjyjj
 creation_rules:
-  - path_regex: containers/.*/secrets\.yaml$
+  - path_regex: (containers|hosts)/.*/secrets\.yaml$
     key_groups:
     - age:
       - *dev_dell2

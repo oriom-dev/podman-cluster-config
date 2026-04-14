@@ -11,7 +11,10 @@ in
     helper.mkQuadlet {
       name = "${appName}-tailscale";
       templatePath = ../../templates/http/tailscale.container.in;
-      vars = { "@APP_NAME@" = appName; };
+      vars = {
+        "@APP_NAME@" = appName;
+        "@TS_SECRET_PATH@" = config.sops.secrets."tailscale_env".path;
+      };
     } // 
     helper.mkQuadlet {
       name = appName;

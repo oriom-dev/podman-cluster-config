@@ -9,6 +9,7 @@ AddCapability=NET_RAW
 Environment=TS_USERSPACE=false
 # Caddy専用のMagicDNS名を設定
 Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=caddy-ingress
+EnvironmentFile=@TS_SECRET_PATH@
 Volume=caddy_tailscale_state:/var/lib/tailscale:Z
 # Headscaleと通信するための基盤ネットワーク
 Network=cluster.network
