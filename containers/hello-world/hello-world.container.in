@@ -7,7 +7,7 @@ After=hello-world-tailscale.service
 
 [Container]
 Image=localhost/hello-world:@COMMIT_HASH@
-Network=container:hello-world-tailscale
+Network=container:hello-world-tailscale.container
 
 [Install]
 WantedBy=default.target
