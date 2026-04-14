@@ -10,6 +10,7 @@ in
     templatePath = ./headscale.container;
   } // {
     ".config/headscale/config.yaml".source = ./config.yaml;
+    ".local/share/headscale/tailscale/.keep".text = "";
     ".local/share/headscale/.keep".text = "";
   };
 }

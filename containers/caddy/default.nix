@@ -22,5 +22,6 @@ in
     {
       # Caddyfileの配置
       ".config/caddy/Caddyfile".source = ./Caddyfile;
+      ".local/share/caddy/tailscale/.keep".text = "";
     };
 }

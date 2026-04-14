@@ -30,6 +30,7 @@ in
     } // 
     {
       ".config/containers/build/${appName}/Containerfile".source = ./Containerfile;
+      ".local/share/${appName}/tailscale/.keep".text = "";
     };
 
   home.activation."copy_${appName}_src" = lib.hm.dag.entryAfter ["linkGeneration"] ''
