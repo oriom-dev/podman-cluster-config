@@ -2,7 +2,7 @@
 let
   helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
   appName = "hello-world";
-  ossCommitHash = "d9435b5a2e57ecf7b49bd613e54b67ce4d98a280";
+  ossCommitHash = "61136d8";
 in
 {
   podman.activeServices = [ "${appName}-tailscale" "${appName}-build" appName ];
