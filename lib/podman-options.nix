@@ -6,7 +6,7 @@
     description = "自動起動するPodmanサービスのリスト";
   };
 
-  tailscaleAuthKeyPath = lib.mkOption {
+  options.podman.tailscaleAuthKeyPath = lib.mkOption {
     type = lib.types.nullOr lib.types.str;
     default = null;
     description = "各ホスト(ノード)固有のTailscale認証キーファイルのパス";
