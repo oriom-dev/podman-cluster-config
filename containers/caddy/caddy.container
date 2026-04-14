@@ -11,6 +11,7 @@ Volume=caddy_data:/data
 Volume=caddy_config:/config
 # 専用サイドカーのネットワークに乗り入れ
 Network=container:caddy-tailscale
+PodmanArgs=--replace
 
 [Install]
 WantedBy=default.target

@@ -9,6 +9,7 @@ After=jpost-api-tailscale.service
 Image=localhost/jpost-api
 EnvironmentFile=@SECRETS_PATH@
 Network=jpost-api-tailscale.container
+PodmanArgs=--replace
 
 [Install]
 WantedBy=default.target

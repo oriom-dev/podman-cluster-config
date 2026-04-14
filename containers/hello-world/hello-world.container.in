@@ -8,6 +8,7 @@ After=hello-world-tailscale.service
 [Container]
 Image=localhost/hello-world:@COMMIT_HASH@
 Network=hello-world-tailscale.container
+PodmanArgs=--replace
 
 [Install]
 WantedBy=default.target
