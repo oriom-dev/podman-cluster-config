@@ -16,7 +16,6 @@ RUN npm run build
 FROM docker.io/library/node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV production
-COPY --from=builder /app/examples/hello-world/public ./public
 COPY --from=builder /app/examples/hello-world/.next ./.next
 COPY --from=builder /app/examples/hello-world/node_modules ./node_modules
 COPY --from=builder /app/examples/hello-world/package.json ./package.json
