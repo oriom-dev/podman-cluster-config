@@ -10,6 +10,7 @@ Environment=TS_USERSPACE=false
 Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=mc-@SERVER_NAME@
 Volume=mc_@SERVER_NAME@_ts_state:/var/lib/tailscale:Z
 Network=cluster.network
+PodmanArgs=--replace
 
 [Install]
 WantedBy=default.target

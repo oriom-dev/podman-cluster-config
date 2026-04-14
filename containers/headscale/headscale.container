@@ -8,6 +8,7 @@ Volume=/home/ubuntu/.config/headscale:/etc/headscale:Z
 Volume=/home/ubuntu/.local/share/headscale:/var/lib/headscale:Z
 Network=cluster.network
 NetworkAlias=headscale
+PodmanArgs=--replace
 
 [Install]
 WantedBy=default.target

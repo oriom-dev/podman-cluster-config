@@ -7,6 +7,7 @@ After=mc-@SERVER_NAME@-sidecar.service
 Image=docker.io/itzg/minecraft-server:latest
 Volume=%h/.local/share/mc-data/@SERVER_NAME@:/data:Z
 Network=container:mc-@SERVER_NAME@-sidecar
+PodmanArgs=--replace
 
 EnvironmentFile=@SECRETS_PATH@
 Environment=EULA=TRUE

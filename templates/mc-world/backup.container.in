@@ -28,5 +28,7 @@ Environment=BACKUP_CRON="0 4 * * *"
 # 古いバックアップの保持期間 (7日経過したものは自動削除)
 Environment=PRUNE_BACKUPS_DAYS=7
 
+PodmanArgs=--replace
+
 [Install]
 WantedBy=default.target

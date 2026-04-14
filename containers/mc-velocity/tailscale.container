@@ -10,6 +10,7 @@ Environment=TS_USERSPACE=false
 Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=mc-velocity
 Volume=%h/.local/share/mc-velocity/tailscale:/var/lib/tailscale:Z
 Network=cluster.network
+PodmanArgs=--replace
 
 PublishPort=25565:25565/tcp
 PublishPort=19132:19132/udp

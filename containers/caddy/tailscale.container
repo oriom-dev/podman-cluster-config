@@ -12,6 +12,7 @@ Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=
 Volume=caddy_tailscale_state:/var/lib/tailscale:Z
 # Headscaleと通信するための基盤ネットワーク
 Network=cluster.network
+PodmanArgs=--replace
 
 # ホスト(VPS)のWebポートを公開 (デュアルスタック対応)
 PublishPort=80:80/tcp
