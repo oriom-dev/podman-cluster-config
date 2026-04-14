@@ -20,4 +20,5 @@ dns:
   magic_dns: true
   base_domain: mycluster.net # 任意の内部ドメイン名
   nameservers:
-    - 1.1.1.1
+    global:
+      - 1.1.1.1
