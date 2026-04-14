@@ -27,9 +27,13 @@ in
     } // 
     {
       ".config/containers/build/${appName}/Containerfile".source = ./Containerfile;
-      ".config/containers/build/${appName}/src" = {
-        source = ./src;
-        recursive = true;
-      };
     };
+
+  home.activation."copy_${appName}_src" = lib.hm.dag.entryAfter ["linkGeneration"] ''
+    BUILD_DIR="$HOME/.config/containers/build/${appName}/src"
+    rm -rf "$BUILD_DIR"
+    mkdir -p "$BUILD_DIR"
+    cp -rL ${./src}/* "$BUILD_DIR"/
+    chmod -R u+w "$BUILD_DIR"
+  '';
 }
