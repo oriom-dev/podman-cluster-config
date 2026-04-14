@@ -7,22 +7,13 @@ AddDevice=/dev/net/tun
 AddCapability=NET_ADMIN
 AddCapability=NET_RAW
 Environment=TS_USERSPACE=false
-# MagicDNS名を mc-ingress に固定
 Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=mc-velocity
 Volume=%h/.local/share/mc-velocity/tailscale:/var/lib/tailscale:Z
 Network=cluster.network
 
-# Java Edition (TCP)
-PublishPort=0.0.0.0:25565:25565/tcp
-PublishPort=[::]:25565:25565/tcp
-
-# Bedrock / Geyser (UDP)
-PublishPort=0.0.0.0:19132:19132/udp
-PublishPort=[::]:19132:19132/udp
-
-# Simple Voice Chat (UDP)
-PublishPort=0.0.0.0:24454:24454/udp
-PublishPort=[::]:24454:24454/udp
+PublishPort=25565:25565/tcp
+PublishPort=19132:19132/udp
+PublishPort=24454:24454/udp
 
 [Install]
 WantedBy=default.target

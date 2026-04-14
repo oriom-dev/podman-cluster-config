@@ -1,13 +1,19 @@
-FROM docker.io/library/node:18-alpine
+# ビルド環境
+FROM docker.io/library/node:20-alpine AS builder
 WORKDIR /app
-
-# ビルド引数の受け取り
-ARG NODE_ENV
-ENV NODE_ENV=$NODE_ENV
-
-# ローカルからコピーされたソースを使用
-COPY src/ ./
+COPY src/package.json src/package-lock.json ./
 RUN npm ci
+COPY src/ ./
+RUN npm run build
+
+# 実行環境
+FROM docker.io/library/node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/package-lock.json ./
+RUN npm ci --omit=dev
+COPY --from=builder /app/dist ./dist
 
 EXPOSE 8080
 CMD ["npm", "start"]

@@ -4,4 +4,3 @@ Description=Build Image for jpost-api
 [Build]
 ImageTag=localhost/jpost-api
 File=%h/.config/containers/build/jpost-api/Containerfile
-BuildArg=NODE_ENV=production
