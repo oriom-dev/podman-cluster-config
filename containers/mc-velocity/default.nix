@@ -17,7 +17,7 @@ in
       name = "${appName}-tailscale";
       templatePath = ./tailscale.container;
       vars = {
-        "@TS_SECRET_PATH@" = config.sops.secrets."tailscale_env".path;
+        "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
       };
     } // 
     # 本体

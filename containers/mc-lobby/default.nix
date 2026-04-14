@@ -19,7 +19,7 @@ in
       templatePath = ../../templates/mc-world/tailscale.container.in;
       vars = {
         "@SERVER_NAME@" = serverName;
-        "@TS_SECRET_PATH@" = config.sops.secrets."tailscale_env".path;
+        "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
       };
     } // 
     # サーバー本体

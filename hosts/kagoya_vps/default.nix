@@ -17,6 +17,9 @@ in
     ../../lib/podman-host.nix
   ] ++ map (name: ../../containers/${name}/default.nix) activeModules;
 
+  sops.secrets."tailscale_env" = { sopsFile = ./secret.yaml; format = "yaml"; };
+  podman.tailscaleAuthKeyPath = config.sops.secrets."tailscale_env".path;
+
   # --- これより下はホストシステム固有の最小設定 ---
   home.username = "ubuntu";
   home.homeDirectory = "/home/ubuntu";

@@ -13,7 +13,7 @@ in
       templatePath = ../../templates/http/tailscale.container.in;
       vars = {
         "@APP_NAME@" = appName;
-        "@TS_SECRET_PATH@" = config.sops.secrets."tailscale_env".path;
+        "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
       };
     } // 
     helper.mkQuadlet {
