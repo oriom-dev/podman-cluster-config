@@ -3,6 +3,7 @@ FROM docker.io/library/node:20-alpine AS builder
 WORKDIR /app
 
 COPY src/ ./
+RUN ls -la
 RUN npm ci
 RUN npm run build
 
