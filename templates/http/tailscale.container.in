@@ -7,7 +7,8 @@ AddDevice=/dev/net/tun
 AddCapability=NET_ADMIN
 AddCapability=NET_RAW
 Environment=TS_USERSPACE=false
-Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev --hostname=@APP_NAME@
+Environment=TS_HOSTNAME=@APP_NAME@
+Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev
 EnvironmentFile=@TS_SECRET_PATH@
 Volume=@APP_NAME@_tailscale_state:/var/lib/tailscale:Z
 Network=cluster.network
