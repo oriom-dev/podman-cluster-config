@@ -8,7 +8,7 @@ AddCapability=NET_ADMIN
 AddCapability=NET_RAW
 Environment=TS_USERSPACE=false
 Environment=TS_HOSTNAME=mc-@SERVER_NAME@
-Environment=TS_EXTRA_ARGS=--login-server=https://headscale.oriom.dev
+Environment=TS_EXTRA_ARGS=--login-server=@TS_LOGIN_SERVER@
 EnvironmentFile=@TS_SECRET_PATH@
 Volume=mc_@SERVER_NAME@_ts_state:/var/lib/tailscale:Z
 Network=cluster.network

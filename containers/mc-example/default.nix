@@ -20,6 +20,7 @@ in
       vars = {
         "@SERVER_NAME@" = serverName;
         "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
+        "@TS_LOGIN_SERVER@" = config.podman.tailscaleLoginServer;
       };
     } // 
     # サーバー本体

@@ -11,4 +11,10 @@
     default = null;
     description = "各ホスト(ノード)固有のTailscale認証キーファイルのパス";
   };
+
+  options.podman.tailscaleLoginServer = lib.mkOption {
+    type = lib.types.str;
+    default = "https://headscale.oriom.dev";
+    description = "TailscaleのログインサーバーURL";
+  };
 }

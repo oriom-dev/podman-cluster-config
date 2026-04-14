@@ -14,6 +14,7 @@ in
       vars = {
         "@APP_NAME@" = appName;
         "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
+        "@TS_LOGIN_SERVER@" = config.podman.tailscaleLoginServer;
       };
     } // 
     helper.mkQuadlet {

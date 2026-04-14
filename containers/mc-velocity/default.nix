@@ -18,6 +18,7 @@ in
       templatePath = ./tailscale.container;
       vars = {
         "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
+        "@TS_LOGIN_SERVER@" = config.podman.tailscaleLoginServer;
       };
     } // 
     # 本体
