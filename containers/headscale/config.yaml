@@ -14,8 +14,10 @@ derp:
     enabled: false # 自前でDERPを立てない場合はfalse
   urls:
     - https://controlplane.tailscale.com/derpmap/default
-sqlite:
-  path: /var/lib/headscale/db.sqlite
+database:
+  type: sqlite3
+  sqlite:
+    path: /var/lib/headscale/db.sqlite
 dns:
   magic_dns: true
   base_domain: mycluster.net # 任意の内部ドメイン名
