@@ -3,6 +3,8 @@ let
   helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
 in
 {
+  podman.activeServices = [ "caddy-tailscale" "caddy" ];
+
   home.file = 
     # Caddy専用のIngressサイドカー
     helper.mkQuadlet {
