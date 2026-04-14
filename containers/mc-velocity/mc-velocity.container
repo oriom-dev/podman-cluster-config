@@ -14,7 +14,7 @@ EnvironmentFile=@SECRETS_PATH@
 Volume=%h/.config/velocity/velocity.toml:/config/velocity.toml:Z
 Volume=%h/.local/share/mc-velocity/data:/data:Z
 # 専用サイドカーのネットワークに乗り入れ
-Network=container:@APP_NAME@-tailscale.container
+Network=@APP_NAME@-tailscale.container
 
 [Install]
 WantedBy=default.target
