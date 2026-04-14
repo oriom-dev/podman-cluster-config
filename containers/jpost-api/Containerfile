@@ -1,9 +1,9 @@
 # ビルド環境
 FROM docker.io/library/node:20-alpine AS builder
 WORKDIR /app
-COPY src/package.json src/package-lock.json ./
-RUN npm ci
+
 COPY src/ ./
+RUN npm ci
 RUN npm run build
 
 # 実行環境

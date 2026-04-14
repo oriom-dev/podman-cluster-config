@@ -14,12 +14,9 @@ Volume=caddy_tailscale_state:/var/lib/tailscale:Z
 Network=cluster.network
 
 # ホスト(VPS)のWebポートを公開 (デュアルスタック対応)
-PublishPort=[::]:80:80/tcp
-PublishPort=[::]:443:443/tcp
-PublishPort=[::]:443:443/udp
-PublishPort=0.0.0.0:80:80/tcp
-PublishPort=0.0.0.0:443:443/tcp
-PublishPort=0.0.0.0:443:443/udp
+PublishPort=80:80/tcp
+PublishPort=443:443/tcp
+PublishPort=443:443/udp
 
 [Install]
 WantedBy=default.target
