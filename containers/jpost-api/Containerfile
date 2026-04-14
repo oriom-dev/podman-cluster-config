@@ -6,9 +6,8 @@ ARG NODE_ENV
 ENV NODE_ENV=$NODE_ENV
 
 # ローカルからコピーされたソースを使用
-COPY src/package*.json ./
-RUN npm install
 COPY src/ ./
+RUN npm ci
 
 EXPOSE 8080
 CMD ["npm", "start"]
