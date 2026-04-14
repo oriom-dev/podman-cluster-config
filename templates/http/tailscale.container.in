@@ -11,7 +11,7 @@ Environment=TS_HOSTNAME=@APP_NAME@
 Environment=TS_AUTH_ONCE=true
 Environment=TS_EXTRA_ARGS=--login-server=@TS_LOGIN_SERVER@
 EnvironmentFile=@TS_SECRET_PATH@
-Volume=%h/.local/share/@APP_NAME@/tailscale:/var/lib/tailscale:Z
+Volume=@APP_NAME@_tailscale_state:/var/lib/tailscale:Z
 Network=cluster.network
 PodmanArgs=--replace
 

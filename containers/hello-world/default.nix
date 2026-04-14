@@ -37,6 +37,5 @@ in
     } // 
     {
       ".config/containers/build/${appName}/Containerfile".source = ./Containerfile;
-      ".local/share/${appName}/tailscale/.keep".text = "";
     };
 }
