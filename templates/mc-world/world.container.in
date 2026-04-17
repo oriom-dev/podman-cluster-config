@@ -6,7 +6,7 @@ After=mc-@SERVER_NAME@-tailscale.service
 [Container]
 Image=docker.io/itzg/minecraft-server:latest
 Volume=mc-@SERVER_NAME@_data:/data:Z
-Network=container:mc-@SERVER_NAME@-tailscale.container
+Network=mc-@SERVER_NAME@-tailscale.container
 PodmanArgs=--replace
 
 EnvironmentFile=@SECRETS_PATH@

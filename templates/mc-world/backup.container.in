@@ -14,7 +14,7 @@ Volume=mc-@SERVER_NAME@_data:/data:ro
 Volume=mc-@SERVER_NAME@_backups:/backups:Z
 
 # 本体と同じサイドカーのネットワーク名前空間に乗り入れる
-Network=container:mc-@SERVER_NAME@-sidecar
+Network=mc-@SERVER_NAME@-tailscale.container
 
 # RCONパスワード等が記述されたシークレットファイルを読み込む
 EnvironmentFile=@SECRETS_PATH@
