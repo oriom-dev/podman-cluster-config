@@ -9,9 +9,9 @@ headscale.oriom.dev {
 }
 
 hello.oriom.dev {
-    reverse_proxy systemd-hello-world:3000
+    reverse_proxy hello-world:3000
 }
 
 jpost.oriom.dev {
-    reverse_proxy systemd-jpost-api:8080
+    reverse_proxy systemd-jpost-api-tailscale:8080
 }
