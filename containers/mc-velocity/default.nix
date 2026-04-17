@@ -5,8 +5,7 @@ let
   appName = "mc-velocity";
 in
 {
-  # シークレットの設定
-  sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
+  sops.secrets."mc-velocity_forwarding-secret" = { sopsFile = ./secrets.yaml; format = "yaml"; };
 
   # 自動起動リストへの申告
   podman.activeServices = [ "${appName}-tailscale" appName ];
@@ -27,7 +26,7 @@ in
       templatePath = ./mc-velocity.container;
       vars = {
         "@APP_NAME@" = appName;
-        "@SECRETS_PATH@" = config.sops.secrets."${appName}_env".path;
+        "@FORWARDING_SECRET_PATH@" = config.sops.secrets."mc-velocity_forwarding-secret".path;
       };
     } // 
     {

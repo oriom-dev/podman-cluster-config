@@ -11,6 +11,7 @@ in
   ];
 
   sops.secrets."mc-${serverName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
+  sops.secrets."mc-${serverName}_forwarding-secret" = { sopsFile = ./secrets.yaml; format = "yaml"; };
 
   home.file = 
     # サイドカー
@@ -30,6 +31,7 @@ in
       vars = {
         "@SERVER_NAME@" = serverName;
         "@SECRETS_PATH@" = config.sops.secrets."mc-${serverName}_env".path;
+        "@FORWARDING_SECRET_PATH@" = config.sops.secrets."mc-${serverName}_forwarding-secret".path;
       };
     } // 
     # バックアップコンテナ

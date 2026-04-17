@@ -5,7 +5,10 @@ After=mc-@SERVER_NAME@-tailscale.service
 
 [Container]
 Image=docker.io/itzg/minecraft-server:latest
+
+Volume=@FORWARDING_SECRET_PATH@:/run/secrets/forwarding.secret:ro
 Volume=mc-@SERVER_NAME@_data:/data:Z
+
 Network=mc-@SERVER_NAME@-tailscale.container
 PodmanArgs=--replace
 
@@ -13,10 +16,10 @@ EnvironmentFile=@SECRETS_PATH@
 Environment=EULA=TRUE
 Environment=TYPE=PAPER
 Environment=ENABLE_RCON=true
+Environment=VELOCITY_SECRET_FILE=/run/secrets/forwarding.secret
 
 # Velocity経由の接続を許可
 Environment=ONLINE_MODE=false
-Environment=ENABLE_VELOCITY_SUPPORT=true
 
 [Install]
 WantedBy=default.target
