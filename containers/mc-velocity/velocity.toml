@@ -1,15 +1,13 @@
-# velocity.toml.in
 [general]
 bind = "0.0.0.0:25565"
 
 [servers]
-lobby = "mc-lobby:25565"
-example = "mc-example:25565"
+lobby = "mc-lobby.ts.home.arpa:25565"
+example = "mc-example.ts.home.arpa:25565"
 
 [forced-hosts]
 "mc.oriom.dev" = ["lobby"]
 "example.mc.oriom.dev" = ["example"]
 
 [advanced]
-# モダンな転送モードを選択
 player-info-forwarding-mode = "modern"
