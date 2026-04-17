@@ -12,8 +12,12 @@ Environment=TS_AUTH_ONCE=true
 Environment=TS_STATE_DIR=/var/lib/tailscale
 Environment=TS_EXTRA_ARGS=--login-server=@TS_LOGIN_SERVER@
 EnvironmentFile=@TS_SECRET_PATH@
+
 Volume=mc-velocity_tailscale:/var/lib/tailscale:Z
+
 Network=cluster.network
+DNS=100.100.100.100
+
 PodmanArgs=--replace
 
 PublishPort=25565:25565/tcp

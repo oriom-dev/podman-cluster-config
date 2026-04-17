@@ -15,7 +15,7 @@ Volume=%h/.config/velocity/velocity.toml:/config/velocity.toml:Z
 Volume=mc-velocity_data:/data:Z
 # 専用サイドカーのネットワークに乗り入れ
 Network=@APP_NAME@-tailscale.container
-DNS=100.100.100.100
+
 PodmanArgs=--replace
 
 [Install]
