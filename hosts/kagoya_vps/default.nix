@@ -20,8 +20,6 @@ in
   sops.secrets."tailscale_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
   podman.tailscaleAuthKeyPath = config.sops.secrets."tailscale_env".path;
 
-  podman.tailscaleLoginServer = "http://systemd-headscale:8080";
-
   # --- これより下はホストシステム固有の最小設定 ---
   home.username = "ubuntu";
   home.homeDirectory = "/home/ubuntu";
