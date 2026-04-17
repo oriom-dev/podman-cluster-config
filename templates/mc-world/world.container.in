@@ -15,7 +15,8 @@ Environment=TYPE=PAPER
 Environment=ENABLE_RCON=true
 
 # Velocity経由の接続を許可
-Environment=ONLINE_MODE=falseEnvironment=ENABLE_VELOCITY_SUPPORT=true
+Environment=ONLINE_MODE=false
+Environment=ENABLE_VELOCITY_SUPPORT=true
 Environment=VELOCITY_SECRET=${VELOCITY_FORWARDING_SECRET}
 
 [Install]
