@@ -1,12 +1,12 @@
 [Unit]
 Description=Minecraft Server (@SERVER_NAME@)
-Requires=mc-@SERVER_NAME@-sidecar.service
-After=mc-@SERVER_NAME@-sidecar.service
+Requires=mc-@SERVER_NAME@-tailscale.service
+After=mc-@SERVER_NAME@-tailscale.service
 
 [Container]
 Image=docker.io/itzg/minecraft-server:latest
 Volume=mc-@SERVER_NAME@_data:/data:Z
-Network=container:mc-@SERVER_NAME@-sidecar
+Network=container:mc-@SERVER_NAME@-tailscale.container
 PodmanArgs=--replace
 
 EnvironmentFile=@SECRETS_PATH@

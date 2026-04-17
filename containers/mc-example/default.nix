@@ -5,7 +5,7 @@ let
 in
 {
   podman.activeServices = [ 
-    "mc-${serverName}-sidecar" 
+    "mc-${serverName}-tailscale" 
     "mc-${serverName}" 
     "mc-${serverName}-backup" 
   ];
@@ -15,7 +15,7 @@ in
   home.file = 
     # サイドカー
     helper.mkQuadlet {
-      name = "mc-${serverName}-sidecar";
+      name = "mc-${serverName}-tailscale";
       templatePath = ../../templates/mc-world/tailscale.container.in;
       vars = {
         "@SERVER_NAME@" = serverName;
