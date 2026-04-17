@@ -11,8 +11,7 @@ Environment=TS_HOSTNAME=caddy-ingress
 Environment=TS_EXTRA_ARGS=--login-server=@TS_LOGIN_SERVER@
 Environment=TS_AUTH_ONCE=true
 EnvironmentFile=@TS_SECRET_PATH@
-Environment=TS_STATE_DIR=/var/lib/tailscale
-Volume=%h/.local/share/caddy/tailscale:/var/lib/tailscale:Z
+Volume=caddy_tailscale:/var/lib/tailscale:Z
 # Headscaleと通信するための基盤ネットワーク
 Network=cluster.network
 PodmanArgs=--replace

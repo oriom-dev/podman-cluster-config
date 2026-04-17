@@ -7,13 +7,13 @@ After=mc-@SERVER_NAME@.service
 [Container]
 Image=docker.io/itzg/mc-backup:latest
 
-# 1. 本体のデータディレクトリを「読み取り専用(ro)」でマウント（安全性の確保）
-Volume=%h/.local/share/mc-data/@SERVER_NAME@:/data:ro
+# 本体のデータディレクトリを「読み取り専用(ro)」でマウント（安全性の確保）
+Volume=mc-@SERVER_NAME@_data:/data:ro
 
-# 2. バックアップの出力先ディレクトリをマウント
-Volume=%h/.local/share/mc-backups/@SERVER_NAME@:/backups:Z
+# バックアップの出力先ディレクトリをマウント
+Volume=mc-@SERVER_NAME@_backups:/backups:Z
 
-# 3. 本体と同じサイドカーのネットワーク名前空間に乗り入れる
+# 本体と同じサイドカーのネットワーク名前空間に乗り入れる
 Network=container:mc-@SERVER_NAME@-sidecar
 
 # RCONパスワード等が記述されたシークレットファイルを読み込む

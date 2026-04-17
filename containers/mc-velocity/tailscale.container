@@ -11,8 +11,7 @@ Environment=TS_HOSTNAME=mc-velocity
 Environment=TS_AUTH_ONCE=true
 Environment=TS_EXTRA_ARGS=--login-server=@TS_LOGIN_SERVER@
 EnvironmentFile=@TS_SECRET_PATH@
-Environment=TS_STATE_DIR=/var/lib/tailscale
-Volume=mc-velocity_tailscale_state:/var/lib/tailscale:Z
+Volume=mc-velocity_tailscale:/var/lib/tailscale:Z
 Network=cluster.network
 PodmanArgs=--replace
 

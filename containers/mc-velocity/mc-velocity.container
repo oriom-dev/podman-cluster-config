@@ -12,7 +12,7 @@ Environment=MEMORY=512M
 EnvironmentFile=@SECRETS_PATH@
 
 Volume=%h/.config/velocity/velocity.toml:/config/velocity.toml:Z
-Volume=%h/.local/share/mc-velocity/data:/data:Z
+Volume=mc-velocity_data:/data:Z
 # 専用サイドカーのネットワークに乗り入れ
 Network=@APP_NAME@-tailscale.container
 PodmanArgs=--replace
