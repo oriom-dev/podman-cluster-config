@@ -7,7 +7,7 @@ in
   podman.activeServices = [ 
     "mc-${serverName}-sidecar" 
     "mc-${serverName}" 
-    "mc-backup-${serverName}" 
+    "mc-${serverName}-backup" 
   ];
 
   sops.secrets."mc_${serverName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
@@ -34,7 +34,7 @@ in
     } // 
     # バックアップコンテナ
     helper.mkQuadlet {
-      name = "mc-backup-${serverName}";
+      name = "mc-${serverName}-backup";
       templatePath = ../../templates/mc-world/backup.container.in;
       vars = {
         "@SERVER_NAME@" = serverName;

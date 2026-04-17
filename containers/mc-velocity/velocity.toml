@@ -7,8 +7,8 @@ lobby = "mc-lobby:25565"
 example = "mc-example:25565"
 
 [forced-hosts]
-"lobby.oriom.dev" = ["lobby"]
-"example.oriom.dev" = ["example"]
+"mc.oriom.dev" = ["lobby"]
+"example.mc.oriom.dev" = ["example"]
 
 [advanced]
 # モダンな転送モードを選択

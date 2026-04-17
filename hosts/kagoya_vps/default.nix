@@ -9,12 +9,15 @@ let
     "hello-world"
     "jpost-api"
     "mc-velocity"
+    "mc-lobby"
+    "mc-example"
   ];
 in
 {
   imports = [
     ../../lib/podman-options.nix
     ../../lib/podman-host.nix
+    ../.../lib/mc-admin.nix
   ] ++ map (name: ../../containers/${name}/default.nix) activeModules;
 
   sops.secrets."tailscale_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
