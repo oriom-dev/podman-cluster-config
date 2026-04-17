@@ -1,5 +1,7 @@
 [Unit]
 Description=Tailscale Sidecar for Caddy Ingress
+Requires=caddy.service
+After=caddy.service
 
 [Container]
 Image=docker.io/tailscale/tailscale:latest
@@ -13,14 +15,8 @@ Environment=TS_AUTH_ONCE=true
 Environment=TS_STATE_DIR=/var/lib/tailscale
 EnvironmentFile=@TS_SECRET_PATH@
 Volume=caddy_tailscale:/var/lib/tailscale:Z
-# Headscaleと通信するための基盤ネットワーク
-Network=cluster.network
+Network=caddy.container
 PodmanArgs=--replace
-
-# ホスト(VPS)のWebポートを公開 (デュアルスタック対応)
-PublishPort=80:80/tcp
-PublishPort=443:443/tcp
-PublishPort=443:443/udp
 
 [Install]
 WantedBy=default.target

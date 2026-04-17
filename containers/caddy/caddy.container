@@ -1,16 +1,17 @@
 [Unit]
 Description=Caddy Reverse Proxy
-Requires=caddy-tailscale.service
-After=caddy-tailscale.service
 
 [Container]
 Image=docker.io/library/caddy:latest
-# %h を用いて設定ファイルをマウント
 Volume=%h/.config/caddy/Caddyfile:/etc/caddy/Caddyfile:Z
 Volume=caddy_data:/data
 Volume=caddy_config:/config
-# 専用サイドカーのネットワークに乗り入れ
-Network=caddy-tailscale.container
+
+Network=cluster.network
+PublishPort=80:80/tcp
+PublishPort=443:443/tcp
+PublishPort=443:443/udp
+
 PodmanArgs=--replace
 
 [Install]
