@@ -13,6 +13,3 @@ example = "mc-example:25565"
 [advanced]
 # モダンな転送モードを選択
 player-info-forwarding-mode = "modern"
-
-# ここにNixからパスワードが注入されます
-forwarding-secret = "${VELOCITY_FORWARDING_SECRET}"
