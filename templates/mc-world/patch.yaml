@@ -1,0 +1,11 @@
+- file: config/paper-global.yml
+  ops:
+    - op: replace
+      path: "/proxies/velocity/enabled"
+      value: true
+    - op: replace
+      path: "/proxies/velocity/online-mode"
+      value: false
+    - op: replace
+      path: "/proxies/velocity/secret"
+      value: "${CFG_VELOCITY_SECRET}"

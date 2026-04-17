@@ -1,46 +1,12 @@
 { config, pkgs, lib, ... }:
+
 let
-  helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
-  serverName = "lobby";
+  worldFactory = import ../../templates/mc-world/default.nix { inherit config pkgs lib; };
 in
-{
-  podman.activeServices = [ 
-    "mc-${serverName}-tailscale" 
-    "mc-${serverName}" 
-    "mc-${serverName}-backup" 
-  ];
+worldFactory.mkWorld {
+  serverName = "lobby";
 
-  sops.secrets."mc-${serverName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
-  sops.secrets."mc-${serverName}_forwarding-secret" = { sopsFile = ./secrets.yaml; format = "yaml"; };
-
-  home.file = 
-    # サイドカー
-    helper.mkQuadlet {
-      name = "mc-${serverName}-tailscale";
-      templatePath = ../../templates/mc-world/tailscale.container.in;
-      vars = {
-        "@SERVER_NAME@" = serverName;
-        "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
-        "@TS_LOGIN_SERVER@" = config.podman.tailscaleLoginServer;
-      };
-    } // 
-    # サーバー本体
-    helper.mkQuadlet {
-      name = "mc-${serverName}";
-      templatePath = ../../templates/mc-world/world.container.in;
-      vars = {
-        "@SERVER_NAME@" = serverName;
-        "@SECRETS_PATH@" = config.sops.secrets."mc-${serverName}_env".path;
-        "@FORWARDING_SECRET_PATH@" = config.sops.secrets."mc-${serverName}_forwarding-secret".path;
-      };
-    } // 
-    # バックアップコンテナ
-    helper.mkQuadlet {
-      name = "mc-${serverName}-backup";
-      templatePath = ../../templates/mc-world/backup.container.in;
-      vars = {
-        "@SERVER_NAME@" = serverName;
-        "@SECRETS_PATH@" = config.sops.secrets."mc-${serverName}_env".path;
-      };
-    };
+  extraEnv = {
+    MOTD = "Welcome to the Oriom Network Lobby!";
+  };
 }
