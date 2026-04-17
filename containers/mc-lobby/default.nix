@@ -10,7 +10,7 @@ in
     "mc-${serverName}-backup" 
   ];
 
-  sops.secrets."mc_${serverName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
+  sops.secrets."mc_${serverName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; owner = "ubuntu"; };
 
   home.file = 
     # サイドカー
