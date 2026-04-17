@@ -13,7 +13,7 @@
     
     envStrings = lib.concatStringsSep "\n" (lib.mapAttrsToList (k: v: "Environment=${k}=${v}") extraEnv);
 
-    basePatch = ./patch.yaml;
+    basePatch = ./patch.json;
     allPatches = [ basePatch ] ++ extraPatches;
     
     patchMounts = map (p: "Volume=${builtins.toString p}:/etc/mc-patches/${builtins.baseNameOf p}:ro") allPatches;
