@@ -54,8 +54,8 @@
         vars = {
           "@SERVER_NAME@" = serverName;
           "@COMMON_SECRETS_PATH@" = config.sops.secrets."mc_common_env".path;
-          "@WORLD_SECRETS_PATH@" = if sopsFile != null then "EnvironmentFile=${config.sops.secrets."mc-${serverName}_env".path}" else "";
-          "@PATCH_MOUNTS@" = patchMountsStr;
+          "@WORLD_SECRETS_PATHES@" = if sopsFile != null then "EnvironmentFile=${config.sops.secrets."mc-${serverName}_env".path}" else "";
+          "@PATCH_VOLUMES@" = patchMountsStr;
           "@PATCH_DEFINITIONS@" = patchDefsStr;
           "@EXTRA_ENV@" = envStrings;
         };
@@ -66,7 +66,7 @@
         vars = {
           "@SERVER_NAME@" = serverName;
           "@COMMON_SECRETS_PATH@" = config.sops.secrets."mc_common_env".path;
-          "@WORLD_SECRETS_PATH@" = if sopsFile != null then "EnvironmentFile=${config.sops.secrets."mc-${serverName}_env".path}" else "";
+          "@WORLD_SECRETS_PATHES@" = if sopsFile != null then "EnvironmentFile=${config.sops.secrets."mc-${serverName}_env".path}" else "";
         };
       };
   };

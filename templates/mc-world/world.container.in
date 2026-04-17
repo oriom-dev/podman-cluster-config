@@ -13,7 +13,7 @@ Network=container:systemd-mc-@SERVER_NAME@-tailscale
 PodmanArgs=--replace
 
 EnvironmentFile=@COMMON_SECRETS_PATH@
-@WORLD_SECRETS_PATH@
+@WORLD_SECRETS_PATHES@
 
 Environment=EULA=TRUE
 Environment=TYPE=PAPER
