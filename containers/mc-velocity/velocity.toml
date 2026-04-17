@@ -13,3 +13,4 @@ example = "mc-example:25565"
 [advanced]
 # モダンな転送モードを選択
 player-info-forwarding-mode = "modern"
+forwarding-secret = "${VELOCITY_SECRET}"

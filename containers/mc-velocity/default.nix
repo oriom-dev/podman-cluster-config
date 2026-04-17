@@ -6,7 +6,7 @@ let
 in
 {
   # シークレットの設定
-  sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; owner = "ubuntu"; };
+  sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
 
   # 自動起動リストへの申告
   podman.activeServices = [ "${appName}-tailscale" appName ];

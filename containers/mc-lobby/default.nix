@@ -10,7 +10,7 @@ in
     "mc-${serverName}-backup" 
   ];
 
-  sops.secrets."mc_${serverName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; owner = "ubuntu"; };
+  sops.secrets."mc-${serverName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
 
   home.file = 
     # サイドカー
@@ -29,7 +29,7 @@ in
       templatePath = ../../templates/mc-world/world.container.in;
       vars = {
         "@SERVER_NAME@" = serverName;
-        "@SECRETS_PATH@" = config.sops.secrets."mc_${serverName}_env".path;
+        "@SECRETS_PATH@" = config.sops.secrets."mc-${serverName}_env".path;
       };
     } // 
     # バックアップコンテナ
@@ -38,7 +38,7 @@ in
       templatePath = ../../templates/mc-world/backup.container.in;
       vars = {
         "@SERVER_NAME@" = serverName;
-        "@SECRETS_PATH@" = config.sops.secrets."mc_${serverName}_env".path;
+        "@SECRETS_PATH@" = config.sops.secrets."mc-${serverName}_env".path;
       };
     };
 }
