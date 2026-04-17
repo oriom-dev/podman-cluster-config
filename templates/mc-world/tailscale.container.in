@@ -12,8 +12,14 @@ Environment=TS_AUTH_ONCE=true
 Environment=TS_STATE_DIR=/var/lib/tailscale
 Environment=TS_EXTRA_ARGS=--login-server=@TS_LOGIN_SERVER@
 EnvironmentFile=@TS_SECRET_PATH@
+
 Volume=mc-@SERVER_NAME@_tailscale:/var/lib/tailscale:Z
+
 Network=cluster.network
+DNS=100.100.100.100
+DNS=1.1.1.1
+DNSSearch=ts.home.arpa
+
 PodmanArgs=--replace
 
 [Install]

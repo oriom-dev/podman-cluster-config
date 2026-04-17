@@ -8,6 +8,7 @@ Image=docker.io/itzg/mc-proxy:latest
 # 環境変数でメモリ割り当て等を調整可能
 Environment=TYPE=VELOCITY
 Environment=MEMORY=512M
+Environment=REPLACE_ENV_VARIABLES=true
 
 EnvironmentFile=@SECRETS_PATH@
 

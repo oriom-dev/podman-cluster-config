@@ -18,7 +18,7 @@ Volume=mc-velocity_tailscale:/var/lib/tailscale:Z
 Network=cluster.network
 DNS=100.100.100.100
 DNS=1.1.1.1
-DNSSearch=mycluster.net
+DNSSearch=ts.home.arpa
 
 PodmanArgs=--replace
 
