@@ -9,4 +9,3 @@ lobby = "mc-lobby.ts.home.arpa:25565"
 
 [advanced]
 player-info-forwarding-mode = "modern"
-force-key-authentication = false
