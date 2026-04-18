@@ -22,6 +22,8 @@ Environment=ONLINE_MODE=false
 
 Environment=PATCH_DEFINITIONS=@PATCH_DEFINITIONS@
 
+Environment=VERSION=26.1.1
+
 @EXTRA_ENV@
 
 [Install]
