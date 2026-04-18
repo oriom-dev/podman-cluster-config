@@ -10,7 +10,7 @@ Environment=MEMORY=512M
 Environment=SYNC_SKIP_NEWER_IN_DESTINATION=false
 Environment=REPLACE_ENV_VARIABLES=true
 
-Environment=MINECRAFT_VERSION=1.21.1
+Environment=MINECRAFT_VERSION=26.1.2
 Environment=MODRINTH_PROJECTS=viaversion,viabackwards,viarewind
 
 Volume=%h/.config/velocity/velocity.toml:/config/velocity.toml:ro
