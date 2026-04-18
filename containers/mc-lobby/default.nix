@@ -8,5 +8,6 @@ worldFactory.mkWorld {
 
   extraEnv = {
     MOTD = "Welcome to the Oriom Network Lobby!";
+    ENABLE_AUTOPAUSE = "true";
   };
 }
