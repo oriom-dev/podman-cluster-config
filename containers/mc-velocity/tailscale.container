@@ -11,13 +11,13 @@ Environment=TS_HOSTNAME=mc-velocity
 Environment=TS_AUTH_ONCE=true
 Environment=TS_STATE_DIR=/var/lib/tailscale
 Environment=TS_EXTRA_ARGS=--login-server=@TS_LOGIN_SERVER@
+Environment=TS_ACCEPT_DNS=true
 EnvironmentFile=@TS_SECRET_PATH@
 
 Volume=mc-velocity_tailscale:/var/lib/tailscale:Z
 
 Network=cluster.network
 DNS=100.100.100.100
-DNS=1.1.1.1
 DNSSearch=ts.home.arpa
 
 PodmanArgs=--replace
