@@ -12,6 +12,7 @@ Environment=REPLACE_ENV_VARIABLES=true
 
 Environment=MINECRAFT_VERSION=26.1.1
 Environment=MODRINTH_PROJECTS=viaversion,viabackwards,viarewind
+Environment=MODRINTH_ALLOWED_VERSION_TYPE=release,beta
 
 Volume=%h/.config/velocity/velocity.toml:/config/velocity.toml:ro
 Volume=@FORWARDING_SECRET_PATH@:/config/forwarding.secret:ro
