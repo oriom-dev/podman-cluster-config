@@ -7,9 +7,17 @@ in
 {
   sops.secrets."mc-velocity_forwarding-secret" = { sopsFile = ./secrets.yaml; format = "yaml"; };
 
-  podman.activeServices = [ appName ];
+  podman.activeServices = [ "${appName}-tailscale" appName ];
 
   home.file = 
+    helper.mkQuadlet {
+      name = "${appName}-tailscale";
+      templatePath = ./tailscale.container;
+      vars = {
+        "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
+        "@TS_LOGIN_SERVER@" = config.podman.tailscaleLoginServer;
+      };
+    } // 
     helper.mkQuadlet {
       name = appName;
       templatePath = ./mc-velocity.container;
