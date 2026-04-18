@@ -1,5 +1,3 @@
-force-key-authentication = false
-
 [general]
 bind = "0.0.0.0:25565"
 
@@ -11,3 +9,4 @@ lobby = "mc-lobby.ts.home.arpa:25565"
 
 [advanced]
 player-info-forwarding-mode = "modern"
+force-key-authentication = false
