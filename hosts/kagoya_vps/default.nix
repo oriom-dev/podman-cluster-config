@@ -10,7 +10,7 @@ let
     "jpost-api"
     "mc-velocity"
     "mc-lobby"
-    "mc-example"
+    "mc-tompedia-lobby"
   ];
 in
 {
