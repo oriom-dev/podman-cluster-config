@@ -5,12 +5,11 @@ After=@APP_NAME@-tailscale.service
 
 [Container]
 Image=docker.io/itzg/mc-proxy:latest
-# 環境変数でメモリ割り当て等を調整可能
 Environment=TYPE=VELOCITY
 Environment=MEMORY=512M
 Environment=REPLACE_ENV_VARIABLES=true
 
-Volume=%h/.config/velocity/velocity.toml:/config/velocity.toml:Z
+Volume=%h/.config/velocity/velocity.toml:/server/velocity.toml:Z
 Volume=@FORWARDING_SECRET_PATH@:/config/forwarding.secret:ro
 Volume=mc-velocity_server:/server:Z
 
