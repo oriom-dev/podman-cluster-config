@@ -1,7 +1,5 @@
 [Unit]
 Description=Minecraft Velocity Proxy
-Requires=@APP_NAME@-tailscale.service
-After=@APP_NAME@-tailscale.service
 
 [Container]
 Image=docker.io/itzg/mc-proxy:latest
@@ -14,7 +12,14 @@ Volume=%h/.config/velocity/velocity.toml:/config/velocity.toml:ro
 Volume=@FORWARDING_SECRET_PATH@:/config/forwarding.secret:ro
 Volume=mc-velocity_server:/server:Z
 
-Network=@APP_NAME@-tailscale.container
+Network=cluster.network
+DNS=100.100.100.100
+DNS=1.1.1.1
+DNSSearch=ts.home.arpa
+
+PublishPort=25565:25565/tcp
+PublishPort=19132:19132/udp
+PublishPort=24454:24454/udp
 
 PodmanArgs=--replace
 
