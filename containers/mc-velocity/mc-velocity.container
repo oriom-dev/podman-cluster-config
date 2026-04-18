@@ -9,7 +9,7 @@ Environment=TYPE=VELOCITY
 Environment=MEMORY=512M
 Environment=REPLACE_ENV_VARIABLES=true
 
-Volume=%h/.config/velocity/velocity.toml:/config/velocity.toml:ro
+Volume=%h/.config/velocity/velocity.toml:/server/velocity.toml:ro
 Volume=@FORWARDING_SECRET_PATH@:/config/forwarding.secret:ro
 Volume=mc-velocity_server:/server:Z
 
