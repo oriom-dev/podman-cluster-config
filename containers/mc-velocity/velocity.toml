@@ -3,11 +3,9 @@ bind = "0.0.0.0:25565"
 
 [servers]
 lobby = "mc-lobby.ts.home.arpa:25565"
-example = "mc-example.ts.home.arpa:25565"
 
 [forced-hosts]
 "mc.oriom.dev" = ["lobby"]
-"example.mc.oriom.dev" = ["example"]
 
 [advanced]
 player-info-forwarding-mode = "modern"
