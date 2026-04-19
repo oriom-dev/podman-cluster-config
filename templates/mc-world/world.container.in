@@ -5,7 +5,7 @@ After=mc-@SERVER_NAME@-tailscale.service
 
 [Container]
 Image=docker.io/itzg/minecraft-server:latest
-Volume=mc-@SERVER_NAME@_data:/data:Z,U
+Volume=mc-@SERVER_NAME@_data:/data:Z
 
 @PATCH_VOLUMES@
 
@@ -15,8 +15,6 @@ PodmanArgs=--replace
 EnvironmentFile=@COMMON_SECRETS_PATH@
 @WORLD_SECRETS_PATHES@
 
-Environment=UID=1000
-Environment=GID=1000
 Environment=EULA=TRUE
 Environment=TYPE=PAPER
 Environment=ENABLE_RCON=true
