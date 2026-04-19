@@ -9,7 +9,7 @@ Volume=mc-@SERVER_NAME@_data:/data:Z
 
 @PATCH_VOLUMES@
 
-Network=container:systemd-mc-@SERVER_NAME@-tailscale
+Network=mc-@SERVER_NAME@-tailscale.container
 PodmanArgs=--replace
 
 EnvironmentFile=@COMMON_SECRETS_PATH@
@@ -19,7 +19,7 @@ Environment=EULA=TRUE
 Environment=TYPE=PAPER
 Environment=ENABLE_RCON=true
 Environment=ONLINE_MODE=false
-Environment=ENABLE_WHITELIST=true
+# Environment=ENABLE_WHITELIST=true
 
 Environment=PATCH_DEFINITIONS=@PATCH_DEFINITIONS@
 
