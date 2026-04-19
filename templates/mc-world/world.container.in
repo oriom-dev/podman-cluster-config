@@ -5,7 +5,7 @@ After=mc-@SERVER_NAME@-tailscale.service
 
 [Container]
 Image=docker.io/itzg/minecraft-server:latest
-Volume=mc-@SERVER_NAME@_data:/data
+Volume=mc-@SERVER_NAME@_data:/data:Z
 
 @PATCH_VOLUMES@
 
@@ -19,7 +19,7 @@ Environment=EULA=TRUE
 Environment=TYPE=PAPER
 Environment=ENABLE_RCON=true
 Environment=ONLINE_MODE=false
-# Environment=ENABLE_WHITELIST=true
+Environment=ENABLE_WHITELIST=true
 
 Environment=PATCH_DEFINITIONS=@PATCH_DEFINITIONS@
 
