@@ -8,11 +8,12 @@ Image=docker.io/itzg/mc-proxy:latest
 Environment=TYPE=VELOCITY
 Environment=MEMORY=512M
 Environment=SYNC_SKIP_NEWER_IN_DESTINATION=false
+Environment=REMOVE_OLD_PLUGINS=true
 Environment=REPLACE_ENV_VARIABLES=true
 
 Environment=MINECRAFT_VERSION=1.21.11
 Environment=MODRINTH_PROJECTS=viaversion,viabackwards
-Environment=MODRINTH_ALLOWED_VERSION_TYPE=beta
+Environment=MODRINTH_ALLOWED_VERSION_TYPE=release
 
 Volume=%h/.config/velocity/velocity.toml:/config/velocity.toml:ro
 Volume=@FORWARDING_SECRET_PATH@:/config/forwarding.secret:ro
