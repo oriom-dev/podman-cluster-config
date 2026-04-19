@@ -24,7 +24,7 @@ Environment=ENABLE_WHITELIST=true
 
 Environment=PATCH_DEFINITIONS=@PATCH_DEFINITIONS@
 
-Environment=VERSION=26.1.1
+Environment=VERSION=1.21.11
 
 @EXTRA_ENV@
 
