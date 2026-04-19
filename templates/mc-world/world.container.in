@@ -15,6 +15,8 @@ PodmanArgs=--replace
 EnvironmentFile=@COMMON_SECRETS_PATH@
 @WORLD_SECRETS_PATHES@
 
+Environment=UID=1000
+Environment=GID=1000
 Environment=EULA=TRUE
 Environment=TYPE=PAPER
 Environment=ENABLE_RCON=true
