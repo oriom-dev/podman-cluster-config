@@ -31,15 +31,17 @@ public final class OriomAuthzGatePlugin {
 
   private static final Pattern ALLOWED_PATTERN = Pattern.compile("\\\"allowed\\\"\\s*:\\s*(true|false)");
   private static final Pattern REASON_PATTERN = Pattern.compile("\\\"reason\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"");
-  private static final Pattern CHALLENGE_URL_PATTERN = Pattern.compile("\\\"url\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"");
-  private static final Pattern CHALLENGE_CODE_PATTERN = Pattern.compile("\\\"code\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"");
+  private static final Pattern CHALLENGE_URL_PATTERN =
+      Pattern.compile("\\\"url\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"");
+  private static final Pattern CHALLENGE_CODE_PATTERN =
+      Pattern.compile("\\\"code\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"");
 
   private final Logger logger;
   private final HttpClient httpClient;
   private final URI authorizeUri;
-  private final URI challengeUri;
   private final String token;
   private final String defaultHost;
+  private final String verifyBaseUrl;
   private final boolean failOpen;
   private final Duration timeout;
   private final String denyMessage;
@@ -50,8 +52,8 @@ public final class OriomAuthzGatePlugin {
     this.logger = logger;
     this.token = readRequiredEnv("AUTHZ_API_TOKEN");
     this.authorizeUri = URI.create(readEnv("AUTHZ_API_URL", "http://mc-whitelist-auth:8787/api/v1/authorize"));
-    this.challengeUri = URI.create(readEnv("AUTHZ_CHALLENGE_URL", "http://mc-whitelist-auth:8787/api/v1/challenge"));
     this.defaultHost = normalizeHost(readEnv("AUTHZ_DEFAULT_HOST", "mc.oriom.dev"));
+    this.verifyBaseUrl = trimTrailingSlash(readEnv("AUTHZ_VERIFY_BASE_URL", "mc.oriom.dev"));
     this.failOpen = Boolean.parseBoolean(readEnv("AUTHZ_FAIL_OPEN", "false"));
     this.timeout = Duration.ofMillis(readLongEnv("AUTHZ_TIMEOUT_MS", 2500L, 100L, 30000L));
     this.denyMessage = readEnv("AUTHZ_DENY_MESSAGE", "You are not authorized for this host.");
@@ -59,9 +61,9 @@ public final class OriomAuthzGatePlugin {
     this.httpClient = HttpClient.newBuilder().connectTimeout(this.timeout).build();
 
     logger.info(
-        "Loaded Oriom Authz Gate plugin. authorizeEndpoint={}, challengeEndpoint={}",
+    "Loaded Oriom Authz Gate plugin. authorizeEndpoint={}, verifyBaseUrl={}",
         this.authorizeUri,
-        this.challengeUri);
+    this.verifyBaseUrl);
   }
 
   @Subscribe(priority = 100)
@@ -73,10 +75,11 @@ public final class OriomAuthzGatePlugin {
     Player player = event.getPlayer();
     String host = resolveHost(player);
     UUID uuid = player.getUniqueId();
+    String username = player.getUsername();
 
     AuthorizationResult result;
     try {
-      result = queryAuthorization(uuid, host);
+      result = queryAuthorization(uuid, host, username);
     } catch (Exception error) {
       if (this.failOpen) {
         logger.warn(
@@ -102,33 +105,26 @@ public final class OriomAuthzGatePlugin {
 
     logger.info(
         "Denied player={} uuid={} host={} reason={}",
-        player.getUsername(),
+        username,
         uuid,
         host,
         result.reason());
 
-    String denyText = this.denyMessage;
-    try {
-      AccessChallenge challenge = issueAccessChallenge(uuid, host, player.getUsername());
-      denyText = this.denyMessagePrefix + " " + challenge.url();
+    String denyText = buildDenyMessage(result);
+
+    if (result.challengeCode() != null) {
       logger.info(
           "Issued access challenge for player={} host={} code={}",
-          player.getUsername(),
+          username,
           host,
-          challenge.code());
-    } catch (Exception challengeError) {
-      logger.warn(
-          "Failed to issue access challenge for player={} host={}: {}",
-          player.getUsername(),
-          host,
-          challengeError.getMessage());
+          result.challengeCode());
     }
 
     event.setResult(ResultedEvent.ComponentResult.denied(Component.text(denyText)));
   }
 
-  private AuthorizationResult queryAuthorization(UUID uuid, String host) throws Exception {
-    URI requestUri = buildRequestUri(uuid, host);
+  private AuthorizationResult queryAuthorization(UUID uuid, String host, String username) throws Exception {
+    URI requestUri = buildRequestUri(uuid, host, username);
     HttpRequest request =
         HttpRequest.newBuilder(requestUri)
             .timeout(this.timeout)
@@ -146,38 +142,8 @@ public final class OriomAuthzGatePlugin {
     return parseAuthorizationBody(response.body());
   }
 
-  private URI buildRequestUri(UUID uuid, String host) {
+  private URI buildRequestUri(UUID uuid, String host, String username) {
     String separator = this.authorizeUri.toString().contains("?") ? "&" : "?";
-    String query =
-        "uuid="
-            + encode(uuid.toString())
-            + "&host="
-            + encode(host);
-
-    return URI.create(this.authorizeUri + separator + query);
-  }
-
-  private AccessChallenge issueAccessChallenge(UUID uuid, String host, String username) throws Exception {
-    URI requestUri = buildChallengeRequestUri(uuid, host, username);
-    HttpRequest request =
-        HttpRequest.newBuilder(requestUri)
-            .timeout(this.timeout)
-            .header("x-api-token", this.token)
-            .GET()
-            .build();
-
-    HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-    if (response.statusCode() != 200) {
-      throw new IllegalStateException(
-          "Unexpected challenge status code: " + response.statusCode() + " body=" + response.body());
-    }
-
-    return parseChallengeBody(response.body());
-  }
-
-  private URI buildChallengeRequestUri(UUID uuid, String host, String username) {
-    String separator = this.challengeUri.toString().contains("?") ? "&" : "?";
     String query =
         "uuid="
             + encode(uuid.toString())
@@ -186,18 +152,7 @@ public final class OriomAuthzGatePlugin {
             + "&username="
             + encode(username);
 
-    return URI.create(this.challengeUri + separator + query);
-  }
-
-  private AccessChallenge parseChallengeBody(String body) {
-    Matcher urlMatcher = CHALLENGE_URL_PATTERN.matcher(body);
-    if (!urlMatcher.find()) {
-      throw new IllegalStateException("Challenge response missing url field: " + body);
-    }
-
-    Matcher codeMatcher = CHALLENGE_CODE_PATTERN.matcher(body);
-    String code = codeMatcher.find() ? codeMatcher.group(1) : "unknown";
-    return new AccessChallenge(code, urlMatcher.group(1));
+    return URI.create(this.authorizeUri + separator + query);
   }
 
   private AuthorizationResult parseAuthorizationBody(String body) {
@@ -209,7 +164,30 @@ public final class OriomAuthzGatePlugin {
     boolean allowed = Boolean.parseBoolean(allowedMatcher.group(1));
     Matcher reasonMatcher = REASON_PATTERN.matcher(body);
     String reason = reasonMatcher.find() ? reasonMatcher.group(1) : "unknown";
-    return new AuthorizationResult(allowed, reason);
+
+    Matcher codeMatcher = CHALLENGE_CODE_PATTERN.matcher(body);
+    String challengeCode = codeMatcher.find() ? codeMatcher.group(1) : null;
+
+    Matcher urlMatcher = CHALLENGE_URL_PATTERN.matcher(body);
+    String challengeUrl = urlMatcher.find() ? urlMatcher.group(1) : null;
+
+    return new AuthorizationResult(allowed, reason, challengeCode, challengeUrl);
+  }
+
+  private String buildDenyMessage(AuthorizationResult result) {
+    if (result.challengeCode() != null && !result.challengeCode().isBlank()) {
+      return this.denyMessagePrefix + " " + buildChallengeAccessUrl(result.challengeCode());
+    }
+
+    if (result.challengeUrl() != null && !result.challengeUrl().isBlank()) {
+      return this.denyMessagePrefix + " " + result.challengeUrl();
+    }
+
+    return this.denyMessage;
+  }
+
+  private String buildChallengeAccessUrl(String code) {
+    return this.verifyBaseUrl + "/" + code;
   }
 
   private String resolveHost(Player player) {
@@ -277,7 +255,19 @@ public final class OriomAuthzGatePlugin {
     return normalized;
   }
 
-  private record AuthorizationResult(boolean allowed, String reason) {}
+  private static String trimTrailingSlash(String value) {
+    String trimmed = value.trim();
+    while (trimmed.endsWith("/")) {
+      trimmed = trimmed.substring(0, trimmed.length() - 1);
+    }
 
-  private record AccessChallenge(String code, String url) {}
+    if (trimmed.isEmpty()) {
+      return "mc.oriom.dev";
+    }
+
+    return trimmed;
+  }
+
+  private record AuthorizationResult(
+      boolean allowed, String reason, String challengeCode, String challengeUrl) {}
 }

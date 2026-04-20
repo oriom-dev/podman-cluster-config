@@ -45,10 +45,12 @@ When a player is denied by Velocity, plugin requests a one-time challenge from a
 
 ### Runtime flow
 1. Player connects to server host.
-2. Velocity checks `/api/v1/authorize`.
-3. If denied, Velocity calls `/api/v1/challenge` and gets short URL.
-4. Player opens the URL and signs in with Google.
-5. Service links Minecraft UUID and assigns domain scopes.
+2. Velocity calls `/api/v1/authorize` with UUID, host, and API token.
+3. If scope matches, auth service returns `allowed=true` and player is allowed.
+4. If scope does not match, the same `/api/v1/authorize` call issues a one-time code and returns it.
+5. Velocity shows `mc.oriom.dev/<code>` in kick message.
+6. Player opens that URL and signs in with Google.
+7. Service links Minecraft UUID and assigns domain scopes.
 
 ### Scope decision policy
 Scope decision logic is implemented as a dedicated function to support future provider/policy extensions.
@@ -63,5 +65,4 @@ Scope decision logic is implemented as a dedicated function to support future pr
 
 ## Operational Notes
 - This repository no longer exposes `/api/v1/whitelist`.
-- Authorization check endpoint: `/api/v1/authorize`
-- Challenge issuance endpoint: `/api/v1/challenge`
+- Velocity integration endpoint: `/api/v1/authorize` (single endpoint; challenge code is issued here when denied)
