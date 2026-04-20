@@ -13,6 +13,9 @@ SQL_PORT="${SQL_ADDR##*:}"
 SQL_BOOTSTRAP_ADDR="${SQL_BOOTSTRAP_ADDR:-127.0.0.1:${SQL_PORT}}"
 ADVERTISE_SQL_ADDR="${ADVERTISE_SQL_ADDR:-${DB_HOSTNAME}:${SQL_PORT}}"
 BOOTSTRAP_MARKER="${DATA_DIR}/.app-user-ready"
+BOOTSTRAP_LOG="${DATA_DIR}/bootstrap-start.log"
+
+echo "[mc-whitelist-db] entrypoint version 2026-04-20.2" >&2
 
 mkdir -p "$CERTS_DIR" "$DATA_DIR"
 
@@ -41,12 +44,28 @@ start_node() {
 }
 
 wait_for_sql() {
+  bootstrap_pid="${1:?bootstrap pid is required}"
   attempts=0
   until cockroach sql --certs-dir="$CERTS_DIR" --host="$SQL_BOOTSTRAP_ADDR" -e "SELECT 1" >/dev/null 2>&1; do
+    if ! kill -0 "$bootstrap_pid" >/dev/null 2>&1; then
+      echo "Cockroach bootstrap process exited before SQL became ready (pid=$bootstrap_pid)." >&2
+      if [ -f "$BOOTSTRAP_LOG" ]; then
+        echo "--- bootstrap log (last 200 lines) ---" >&2
+        tail -n 200 "$BOOTSTRAP_LOG" >&2 || true
+        echo "--- end bootstrap log ---" >&2
+      fi
+      exit 1
+    fi
+
     attempts=$((attempts + 1))
     if [ "$attempts" -ge 120 ]; then
       echo "Timed out waiting for Cockroach SQL listener at $SQL_BOOTSTRAP_ADDR" >&2
       echo "Cockroach startup settings: listen=$LISTEN_ADDR sql=$SQL_ADDR advertise_sql=$ADVERTISE_SQL_ADDR" >&2
+      if [ -f "$BOOTSTRAP_LOG" ]; then
+        echo "--- bootstrap log (last 200 lines) ---" >&2
+        tail -n 200 "$BOOTSTRAP_LOG" >&2 || true
+        echo "--- end bootstrap log ---" >&2
+      fi
       exit 1
     fi
     sleep 1
@@ -67,10 +86,14 @@ bootstrap_app_user() {
 ensure_certs
 
 if [ ! -f "$BOOTSTRAP_MARKER" ]; then
-  start_node --background
-  wait_for_sql
+  rm -f "$BOOTSTRAP_LOG"
+  start_node >"$BOOTSTRAP_LOG" 2>&1 &
+  bootstrap_pid=$!
+
+  wait_for_sql "$bootstrap_pid"
   bootstrap_app_user
   cockroach quit --certs-dir="$CERTS_DIR" --host="$SQL_BOOTSTRAP_ADDR" || true
+  wait "$bootstrap_pid" || true
   touch "$BOOTSTRAP_MARKER"
 fi
 
