@@ -1,11 +1,6 @@
 import { createRoute } from 'honox/factory';
-import { auth, isGoogleAuthConfigured } from '../../lib/auth';
 
-export default createRoute(async (c) => {
-  if (c.req.method !== 'POST') {
-    return c.text('Method Not Allowed', 405);
-  }
-
+export const POST = createRoute(async (c) => {
   const form = await c.req.formData();
   const provider = `${form.get('provider') ?? 'google'}`.trim().toLowerCase();
   const rawNext = `${form.get('next') ?? ''}`.trim();
@@ -15,17 +10,23 @@ export default createRoute(async (c) => {
     return c.redirect(`/?error=${encodeURIComponent('対応していないログイン方式です。')}`);
   }
 
-  if (!isGoogleAuthConfigured) {
-    return c.text('Googleログインの設定が未完了です。', 500);
+  const forwardedHeaders = new Headers({
+    'content-type': 'application/json'
+  });
+
+  const cookie = c.req.raw.headers.get('cookie');
+  if (cookie) {
+    forwardedHeaders.set('cookie', cookie);
   }
 
-  return auth.api.signInSocial({
-    body: {
+  return fetch(new URL('/api/auth/sign-in/social', c.req.url), {
+    method: 'POST',
+    headers: forwardedHeaders,
+    body: JSON.stringify({
       provider: 'google',
       callbackURL,
       errorCallbackURL: `/?error=${encodeURIComponent('Googleログインに失敗しました。')}`
-    },
-    headers: c.req.raw.headers,
-    asResponse: true
+    }),
+    redirect: 'manual'
   });
 });

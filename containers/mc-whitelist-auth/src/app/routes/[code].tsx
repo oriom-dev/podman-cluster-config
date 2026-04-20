@@ -1,6 +1,6 @@
 import { createRoute } from 'honox/factory';
-import { auth, isGoogleAuthConfigured } from '../lib/auth';
-import { decideScopesForChallenge, selectSignInProviderForHost } from '../lib/access-policy';
+import { auth } from '../lib/auth';
+import { decideScopesForChallenge } from '../lib/access-policy';
 import {
   appendAuditLog,
   consumeMinecraftAccessChallengeForUser,
@@ -50,33 +50,11 @@ export default createRoute(async (c) => {
     );
   }
 
-  const provider = selectSignInProviderForHost(challenge.attemptedHost);
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
   const user = session?.user;
 
   if (!user) {
-    if (provider === 'google' && !isGoogleAuthConfigured) {
-      return c.render(
-        <section class={styles.panel}>
-          <p class={styles.warning}>Googleログインの設定が未完了です。</p>
-          <p class={styles.meta}>管理者へ連絡してください。</p>
-        </section>
-      );
-    }
-
-    return c.render(
-      <section class={styles.panel}>
-        <p class={styles.lead}>ログインして認証を完了してください。</p>
-
-        <form class={styles.form} method='post' action='/auth/start'>
-          <input type='hidden' name='next' value={`/${challenge.code}`} />
-          <input type='hidden' name='provider' value={provider} />
-          <button class={styles.button} type='submit'>
-            Googleでログイン
-          </button>
-        </form>
-      </section>
-    );
+    return c.redirect(`/?next=${encodeURIComponent(`/${challenge.code}`)}`);
   }
 
   const consumeResult = await consumeMinecraftAccessChallengeForUser(challenge.code, user.id);

@@ -8,8 +8,6 @@ const betterAuthBaseUrl = env.BETTER_AUTH_URL;
 const googleClientId = env.GOOGLE_CLIENT_ID;
 const googleClientSecret = env.GOOGLE_CLIENT_SECRET;
 
-export const isGoogleAuthConfigured = Boolean(googleClientId && googleClientSecret);
-
 export const auth = betterAuth({
   appName: 'Oriom Minecraft Auth',
   baseURL: betterAuthBaseUrl,
@@ -17,15 +15,13 @@ export const auth = betterAuth({
     provider: 'pg',
     schema
   }),
-  socialProviders: isGoogleAuthConfigured
-    ? {
-        google: {
-          clientId: googleClientId,
-          clientSecret: googleClientSecret,
-          prompt: 'select_account'
-        }
-      }
-    : {},
+  socialProviders: {
+    google: {
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
+      prompt: 'select_account'
+    }
+  },
   emailAndPassword: {
     enabled: false
   },
