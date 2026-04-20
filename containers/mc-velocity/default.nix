@@ -7,7 +7,7 @@ in
 {
   sops.secrets."mc-velocity_forwarding-secret" = { sopsFile = ./secrets.yaml; format = "yaml"; };
 
-  podman.activeServices = [ "${appName}-tailscale" appName ];
+  podman.activeServices = [ "${appName}-tailscale" "${appName}-build" appName ];
 
   home.file = 
     helper.mkQuadlet {
@@ -20,6 +20,11 @@ in
     } // 
     helper.mkQuadlet {
       name = appName;
+      type = "build";
+      templatePath = ./${appName}.build;
+    } //
+    helper.mkQuadlet {
+      name = appName;
       templatePath = ./mc-velocity.container;
       vars = {
         "@APP_NAME@" = appName;
@@ -28,5 +33,14 @@ in
     } // 
     {
       ".config/velocity/velocity.toml".source = ./velocity.toml;
+      ".config/containers/build/${appName}/Containerfile".source = ./Containerfile;
     };
+
+  home.activation."copy_${appName}_plugin_src" = lib.hm.dag.entryAfter ["linkGeneration"] ''
+    BUILD_DIR="$HOME/.config/containers/build/${appName}/plugin-src"
+    rm -rf "$BUILD_DIR"
+    mkdir -p "$BUILD_DIR"
+    cp -rL ${./plugin-src}/* "$BUILD_DIR"/
+    chmod -R u+w "$BUILD_DIR"
+  '';
 }

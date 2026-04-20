@@ -1,0 +1,8 @@
+FROM docker.io/library/gradle:8.14-jdk17-alpine AS builder
+WORKDIR /build
+
+COPY plugin-src/ ./plugin-src/
+RUN gradle --no-daemon -p plugin-src clean build
+
+FROM docker.io/itzg/mc-proxy:latest
+COPY --from=builder /build/plugin-src/build/libs/*.jar /plugins/

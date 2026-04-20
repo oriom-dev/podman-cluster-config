@@ -15,3 +15,7 @@ hello.oriom.dev {
 jpost.oriom.dev {
     reverse_proxy systemd-jpost-api-tailscale:8080
 }
+
+mc.oriom.dev {
+    reverse_proxy mc-whitelist-auth:8787
+}

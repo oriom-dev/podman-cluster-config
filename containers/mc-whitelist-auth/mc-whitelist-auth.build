@@ -1,0 +1,6 @@
+[Unit]
+Description=Build Image for mc-whitelist-auth
+
+[Build]
+ImageTag=localhost/mc-whitelist-auth
+File=%h/.config/containers/build/mc-whitelist-auth/Containerfile

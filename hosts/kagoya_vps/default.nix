@@ -8,6 +8,8 @@ let
     "caddy"
     "hello-world"
     "jpost-api"
+    "mc-whitelist-db"
+    "mc-whitelist-auth"
     "mc-velocity"
     "mc-lobby"
     "mc-tompedia-lobby"

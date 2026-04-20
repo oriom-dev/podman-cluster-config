@@ -1,0 +1,6 @@
+[Unit]
+Description=Build Image for mc-velocity
+
+[Build]
+ImageTag=localhost/mc-velocity
+File=%h/.config/containers/build/mc-velocity/Containerfile

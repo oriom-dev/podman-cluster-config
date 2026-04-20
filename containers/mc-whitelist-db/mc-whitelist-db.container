@@ -1,0 +1,13 @@
+[Unit]
+Description=Minecraft Whitelist CockroachDB
+
+[Container]
+Image=docker.io/cockroachdb/cockroach:v25.3.3
+Exec=start-single-node --insecure --listen-addr=0.0.0.0:26257 --http-addr=0.0.0.0:8080 --store=/cockroach/cockroach-data
+Volume=mc-whitelist-db_data:/cockroach/cockroach-data:Z
+Network=cluster.network
+NetworkAlias=mc-whitelist-db
+PodmanArgs=--replace
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,24 @@
+[Unit]
+Description=Minecraft Whitelist Auth Service
+Requires=mc-whitelist-db.service
+After=mc-whitelist-db.service
+Requires=mc-whitelist-auth-build.service
+After=mc-whitelist-auth-build.service
+
+[Container]
+Image=localhost/mc-whitelist-auth
+Environment=PORT=8787
+Environment=DB_URL=postgresql://root@mc-whitelist-db:26257/defaultdb?sslmode=disable
+Environment=PUBLIC_BASE_URL=https://mc.oriom.dev
+Environment=BETTER_AUTH_URL=https://mc.oriom.dev
+Environment=BETTER_AUTH_SECRET=
+Environment=GOOGLE_CLIENT_ID=
+Environment=GOOGLE_CLIENT_SECRET=
+Environment=ADMIN_EMAIL_ALLOWLIST=
+Environment=AUTHZ_API_TOKEN=
+Network=cluster.network
+NetworkAlias=mc-whitelist-auth
+PodmanArgs=--replace
+
+[Install]
+WantedBy=default.target

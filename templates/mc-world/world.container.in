@@ -20,7 +20,6 @@ Environment=EULA=TRUE
 Environment=TYPE=PAPER
 Environment=ENABLE_RCON=true
 Environment=ONLINE_MODE=false
-Environment=ENABLE_WHITELIST=true
 
 Environment=PATCH_DEFINITIONS=@PATCH_DEFINITIONS@
 

@@ -1,0 +1,28 @@
+{
+  "name": "mc-whitelist-auth",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --mode client && vite build",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.6.5",
+    "@hono/node-server": "^1.19.14",
+    "better-auth": "^1.6.5",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.14",
+    "honox": "^0.1.55",
+    "jose": "^6.2.2",
+    "pg": "^8.20.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@hono/vite-build": "^1.11.1",
+    "@hono/vite-dev-server": "^0.25.1",
+    "@types/node": "^25.6.0",
+    "@types/pg": "^8.15.6",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.8"
+  }
+}

@@ -1,0 +1,18 @@
+FROM docker.io/library/node:20-alpine AS builder
+WORKDIR /app
+
+COPY src/ ./
+RUN npm ci
+RUN npm run build
+
+FROM docker.io/library/node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/package-lock.json ./
+RUN npm ci --omit=dev
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 8787
+CMD ["npm", "start"]

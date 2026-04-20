@@ -1,15 +1,25 @@
 [Unit]
 Description=Minecraft Velocity Proxy
+Requires=@APP_NAME@-build.service
+After=@APP_NAME@-build.service
 Requires=@APP_NAME@-tailscale.service
 After=@APP_NAME@-tailscale.service
 
 [Container]
-Image=docker.io/itzg/mc-proxy:latest
+Image=localhost/@APP_NAME@
 Environment=TYPE=VELOCITY
 Environment=MEMORY=512M
 Environment=SYNC_SKIP_NEWER_IN_DESTINATION=false
 Environment=REMOVE_OLD_PLUGINS=true
 Environment=REPLACE_ENV_VARIABLES=true
+Environment=AUTHZ_API_URL=http://mc-whitelist-auth:8787/api/v1/authorize
+Environment=AUTHZ_CHALLENGE_URL=http://mc-whitelist-auth:8787/api/v1/challenge
+Environment=AUTHZ_API_TOKEN=
+Environment=AUTHZ_DEFAULT_HOST=mc.oriom.dev
+Environment=AUTHZ_TIMEOUT_MS=2500
+Environment=AUTHZ_FAIL_OPEN=false
+Environment=AUTHZ_DENY_MESSAGE=You are not authorized for this host.
+Environment=AUTHZ_DENY_MESSAGE_PREFIX=Open this URL to verify access:
 
 Environment=MINECRAFT_VERSION=1.21.11
 Environment=MODRINTH_PROJECTS=viaversion,viabackwards
