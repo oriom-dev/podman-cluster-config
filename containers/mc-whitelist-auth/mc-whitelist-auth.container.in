@@ -2,6 +2,8 @@
 Description=Minecraft Whitelist Auth Service
 Requires=mc-whitelist-db.service
 After=mc-whitelist-db.service
+Requires=mc-whitelist-auth-tailscale.service
+After=mc-whitelist-auth-tailscale.service
 Requires=mc-whitelist-auth-build.service
 After=mc-whitelist-auth-build.service
 
