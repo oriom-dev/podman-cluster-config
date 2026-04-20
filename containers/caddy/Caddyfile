@@ -20,5 +20,5 @@ mc.oriom.dev {
     @internal_api path /api/v1/*
     respond @internal_api "Forbidden" 403
 
-    reverse_proxy mc-whitelist-auth:3000
+    reverse_proxy systemd-mc-whitelist-auth-tailscale:3000
 }
