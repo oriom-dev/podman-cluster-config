@@ -12,7 +12,7 @@ Environment=MEMORY=512M
 Environment=SYNC_SKIP_NEWER_IN_DESTINATION=false
 Environment=REMOVE_OLD_PLUGINS=true
 Environment=REPLACE_ENV_VARIABLES=true
-Environment=AUTHZ_API_URL=http://mc-whitelist-auth:8787/api/v1/authorize
+Environment=AUTHZ_API_URL=http://mc-whitelist-auth.ts.home.arpa:8787/api/v1/authorize
 Environment=AUTHZ_VERIFY_BASE_URL=mc.oriom.dev
 Environment=AUTHZ_DEFAULT_HOST=mc.oriom.dev
 Environment=AUTHZ_TIMEOUT_MS=2500
