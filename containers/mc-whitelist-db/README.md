@@ -17,4 +17,4 @@ Set these entries in module secrets files:
 
 - `containers/mc-whitelist-auth/secrets.yaml`
 	- key: `mc-whitelist-auth_db_env`
-	- value example: `DB_URL=postgresql://whitelist_auth:<same-password>@mc-whitelist-db.ts.home.arpa:26258/defaultdb?sslmode=require`
+	- value example: `DB_URL=postgresql://whitelist_auth:<same-password>@mc-whitelist-db.ts.home.arpa:26258/defaultdb?uselibpqcompat=true&sslmode=require`

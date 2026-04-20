@@ -151,14 +151,50 @@ export const schema = {
   auditLogs
 };
 
-const connectionString = env.DB_URL;
-const parsedConnectionUrl = (() => {
+const normalizeDbConnectionString = (
+  rawConnectionString: string
+): {
+  connectionString: string;
+  parsedUrl: URL | null;
+  normalizedToLibpqCompat: boolean;
+} => {
   try {
-    return new URL(connectionString);
+    const parsedUrl = new URL(rawConnectionString);
+    const sslMode = (parsedUrl.searchParams.get('sslmode') || '').toLowerCase();
+    const hasLibpqCompat = parsedUrl.searchParams.has('uselibpqcompat');
+
+    if (sslMode === 'require' && !hasLibpqCompat) {
+      parsedUrl.searchParams.set('uselibpqcompat', 'true');
+      return {
+        connectionString: parsedUrl.toString(),
+        parsedUrl,
+        normalizedToLibpqCompat: true
+      };
+    }
+
+    return {
+      connectionString: parsedUrl.toString(),
+      parsedUrl,
+      normalizedToLibpqCompat: false
+    };
   } catch {
-    return null;
+    return {
+      connectionString: rawConnectionString,
+      parsedUrl: null,
+      normalizedToLibpqCompat: false
+    };
   }
-})();
+};
+
+const normalizedConnection = normalizeDbConnectionString(env.DB_URL);
+const connectionString = normalizedConnection.connectionString;
+const parsedConnectionUrl = normalizedConnection.parsedUrl;
+
+if (normalizedConnection.normalizedToLibpqCompat) {
+  console.info(
+    '[mc-whitelist-auth] Added uselibpqcompat=true to DB_URL for sslmode=require to use libpq-compatible TLS semantics.'
+  );
+}
 
 const pool = new Pool({
   connectionString,
@@ -173,6 +209,8 @@ export type DbRuntimeDiagnostics = {
   dbHost: string | null;
   dbPort: string | null;
   dbProtocol: string | null;
+  dbSslMode: string | null;
+  dbUseLibpqCompat: string | null;
   lookupV4: string[];
   lookupV6: string[];
   lookupError: string | null;
@@ -201,6 +239,8 @@ export const getDbRuntimeDiagnostics = async (): Promise<DbRuntimeDiagnostics> =
   const dbHost = parsedConnectionUrl?.hostname ?? null;
   const dbPort = parsedConnectionUrl?.port || null;
   const dbProtocol = parsedConnectionUrl?.protocol ?? null;
+  const dbSslMode = parsedConnectionUrl?.searchParams.get('sslmode') ?? null;
+  const dbUseLibpqCompat = parsedConnectionUrl?.searchParams.get('uselibpqcompat') ?? null;
   const resolvConf = await readResolvConfHead();
 
   if (!dbHost) {
@@ -208,6 +248,8 @@ export const getDbRuntimeDiagnostics = async (): Promise<DbRuntimeDiagnostics> =
       dbHost,
       dbPort,
       dbProtocol,
+      dbSslMode,
+      dbUseLibpqCompat,
       lookupV4: [],
       lookupV6: [],
       lookupError: 'DB_URL host is missing or invalid',
@@ -226,6 +268,8 @@ export const getDbRuntimeDiagnostics = async (): Promise<DbRuntimeDiagnostics> =
       dbHost,
       dbPort,
       dbProtocol,
+      dbSslMode,
+      dbUseLibpqCompat,
       lookupV4: v4.map((item) => item.address),
       lookupV6: v6.map((item) => item.address),
       lookupError: null,
@@ -237,6 +281,8 @@ export const getDbRuntimeDiagnostics = async (): Promise<DbRuntimeDiagnostics> =
       dbHost,
       dbPort,
       dbProtocol,
+      dbSslMode,
+      dbUseLibpqCompat,
       lookupV4: [],
       lookupV6: [],
       lookupError: error instanceof Error ? error.message : 'unknown lookup error',

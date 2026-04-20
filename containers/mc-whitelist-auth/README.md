@@ -67,7 +67,7 @@ Scope decision logic is implemented as a dedicated function to support future pr
 - This service loads an additional SOPS secret entry from `containers/mc-whitelist-auth/secrets.yaml`.
 - Key name: `mc-whitelist-auth_db_env`
 - Value format: envfile content (single line), for example:
-  - `DB_URL=postgresql://whitelist_auth:<strong-password>@mc-whitelist-db.ts.home.arpa:26258/defaultdb?sslmode=require`
+  - `DB_URL=postgresql://whitelist_auth:<strong-password>@mc-whitelist-db.ts.home.arpa:26258/defaultdb?uselibpqcompat=true&sslmode=require`
 
 ## Operational Notes
 - This repository no longer exposes `/api/v1/whitelist`.
