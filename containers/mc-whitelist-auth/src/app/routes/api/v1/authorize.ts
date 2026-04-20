@@ -1,5 +1,5 @@
 import { createRoute } from 'honox/factory';
-import { appendAuditLog, authorizePlayerForHost, issueMinecraftAccessChallenge } from '../../../lib/db';
+import { appendAuditLog, authorizePlayerForHost, getDbRuntimeDiagnostics, issueMinecraftAccessChallenge } from '../../../lib/db';
 import { env } from '../../../lib/env';
 import { isTailscaleRequest } from '../../../lib/network-guard';
 
@@ -82,7 +82,29 @@ export default createRoute(async (c) => {
       expiresAt: challenge.expiresAt.toISOString()
     });
   } catch (error) {
+    const diagnostics = await getDbRuntimeDiagnostics();
+    const requestId = `authz-${Date.now().toString(36)}`;
+    const details =
+      error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            code: (error as Error & { code?: string }).code
+          }
+        : { message: 'unknown error', value: String(error) };
+
+    console.error('[mc-whitelist-auth] authorize failed', {
+      requestId,
+      route: '/api/v1/authorize',
+      uuid,
+      host,
+      username,
+      dbDiagnostics: diagnostics,
+      error: details
+    });
+
     const message = error instanceof Error ? error.message : 'Authorization failed';
-    return c.json({ error: message }, 500);
+    return c.json({ error: message, requestId }, 500);
   }
 });

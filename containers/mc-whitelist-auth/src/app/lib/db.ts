@@ -1,6 +1,8 @@
 import { and, asc, desc, eq, gt, isNull, or, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { boolean, index, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { lookup } from 'node:dns/promises';
+import { readFile } from 'node:fs/promises';
 import { Pool } from 'pg';
 import { env } from './env';
 
@@ -150,6 +152,13 @@ export const schema = {
 };
 
 const connectionString = env.DB_URL;
+const parsedConnectionUrl = (() => {
+  try {
+    return new URL(connectionString);
+  } catch {
+    return null;
+  }
+})();
 
 const pool = new Pool({
   connectionString,
@@ -159,6 +168,83 @@ const pool = new Pool({
 export const db = drizzle(pool, { schema });
 
 let schemaPromise: Promise<void> | null = null;
+
+export type DbRuntimeDiagnostics = {
+  dbHost: string | null;
+  dbPort: string | null;
+  dbProtocol: string | null;
+  lookupV4: string[];
+  lookupV6: string[];
+  lookupError: string | null;
+  resolvConfHead: string[];
+  resolvConfError: string | null;
+};
+
+const readResolvConfHead = async (): Promise<{ lines: string[]; error: string | null }> => {
+  try {
+    const content = await readFile('/etc/resolv.conf', 'utf8');
+    const lines = content
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .slice(0, 8);
+    return { lines, error: null };
+  } catch (error) {
+    return {
+      lines: [],
+      error: error instanceof Error ? error.message : 'unknown error reading /etc/resolv.conf'
+    };
+  }
+};
+
+export const getDbRuntimeDiagnostics = async (): Promise<DbRuntimeDiagnostics> => {
+  const dbHost = parsedConnectionUrl?.hostname ?? null;
+  const dbPort = parsedConnectionUrl?.port || null;
+  const dbProtocol = parsedConnectionUrl?.protocol ?? null;
+  const resolvConf = await readResolvConfHead();
+
+  if (!dbHost) {
+    return {
+      dbHost,
+      dbPort,
+      dbProtocol,
+      lookupV4: [],
+      lookupV6: [],
+      lookupError: 'DB_URL host is missing or invalid',
+      resolvConfHead: resolvConf.lines,
+      resolvConfError: resolvConf.error
+    };
+  }
+
+  try {
+    const [v4, v6] = await Promise.all([
+      lookup(dbHost, { family: 4, all: true }),
+      lookup(dbHost, { family: 6, all: true })
+    ]);
+
+    return {
+      dbHost,
+      dbPort,
+      dbProtocol,
+      lookupV4: v4.map((item) => item.address),
+      lookupV6: v6.map((item) => item.address),
+      lookupError: null,
+      resolvConfHead: resolvConf.lines,
+      resolvConfError: resolvConf.error
+    };
+  } catch (error) {
+    return {
+      dbHost,
+      dbPort,
+      dbProtocol,
+      lookupV4: [],
+      lookupV6: [],
+      lookupError: error instanceof Error ? error.message : 'unknown lookup error',
+      resolvConfHead: resolvConf.lines,
+      resolvConfError: resolvConf.error
+    };
+  }
+};
 
 export const ensureSchema = async (): Promise<void> => {
   if (schemaPromise) {
@@ -307,7 +393,11 @@ export const ensureSchema = async (): Promise<void> => {
     } finally {
       client.release();
     }
-  })();
+  })().catch((error) => {
+    // Allow retry on transient failures such as DNS race conditions at startup.
+    schemaPromise = null;
+    throw error;
+  });
 
   return schemaPromise;
 };
