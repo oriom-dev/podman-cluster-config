@@ -51,7 +51,7 @@ public final class OriomAuthzGatePlugin {
   public OriomAuthzGatePlugin(Logger logger) {
     this.logger = logger;
     this.token = readRequiredEnv("AUTHZ_API_TOKEN");
-    this.authorizeUri = URI.create(readEnv("AUTHZ_API_URL", "http://mc-whitelist-auth:8787/api/v1/authorize"));
+    this.authorizeUri = URI.create(readEnv("AUTHZ_API_URL", "http://mc-whitelist-auth:3000/api/v1/authorize"));
     this.defaultHost = normalizeHost(readEnv("AUTHZ_DEFAULT_HOST", "mc.oriom.dev"));
     this.verifyBaseUrl = trimTrailingSlash(readEnv("AUTHZ_VERIFY_BASE_URL", "mc.oriom.dev"));
     this.failOpen = Boolean.parseBoolean(readEnv("AUTHZ_FAIL_OPEN", "false"));

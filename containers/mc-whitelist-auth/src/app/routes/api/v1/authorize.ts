@@ -1,10 +1,15 @@
 import { createRoute } from 'honox/factory';
 import { appendAuditLog, authorizePlayerForHost, issueMinecraftAccessChallenge } from '../../../lib/db';
 import { env } from '../../../lib/env';
+import { isTailscaleRequest } from '../../../lib/network-guard';
 
 const trimTrailingSlash = (value: string): string => value.replace(/\/+$/, '');
 
 export default createRoute(async (c) => {
+  if (!isTailscaleRequest(c.req.raw)) {
+    return c.json({ error: 'Forbidden' }, 403);
+  }
+
   const expectedToken = env.AUTHZ_API_TOKEN;
 
   const providedToken = c.req.query('token') || c.req.header('x-api-token') || '';

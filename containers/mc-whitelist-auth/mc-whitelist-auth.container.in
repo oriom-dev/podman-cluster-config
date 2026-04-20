@@ -7,11 +7,12 @@ After=mc-whitelist-auth-build.service
 
 [Container]
 Image=localhost/mc-whitelist-auth
-Environment=PORT=8787
-Environment=DB_URL=postgresql://root@mc-whitelist-db:26258/defaultdb?sslmode=disable
+Environment=PORT=3000
+Environment=DB_URL=postgresql://root@mc-whitelist-db.ts.home.arpa:26258/defaultdb?sslmode=verify-full&sslrootcert=/certs/mc-whitelist-db/ca.crt&sslcert=/certs/mc-whitelist-db/client.root.crt&sslkey=/certs/mc-whitelist-db/client.root.key
 Environment=PUBLIC_BASE_URL=https://mc.oriom.dev
 Environment=BETTER_AUTH_URL=https://mc.oriom.dev
 EnvironmentFile=@SECRETS_PATH@
+Volume=mc-whitelist-db_certs:/certs/mc-whitelist-db:ro
 Network=mc-whitelist-auth-tailscale.container
 PodmanArgs=--replace
 
