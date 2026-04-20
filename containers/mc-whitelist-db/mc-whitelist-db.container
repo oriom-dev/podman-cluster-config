@@ -5,11 +5,12 @@ After=mc-whitelist-db-tailscale.service
 
 [Container]
 Image=docker.io/cockroachdb/cockroach:v25.3.3
-Exec=sh -ec 'set -eu; CERTS_DIR=/cockroach/certs; mkdir -p "$CERTS_DIR"; if [ ! -f "$CERTS_DIR/ca.crt" ]; then cockroach cert create-ca --certs-dir="$CERTS_DIR" --ca-key="$CERTS_DIR/ca.key"; cockroach cert create-node 127.0.0.1 localhost mc-whitelist-db mc-whitelist-db.ts.home.arpa --certs-dir="$CERTS_DIR" --ca-key="$CERTS_DIR/ca.key"; cockroach cert create-client root --certs-dir="$CERTS_DIR" --ca-key="$CERTS_DIR/ca.key"; chmod 600 "$CERTS_DIR"/*.key; fi; exec cockroach start-single-node --certs-dir="$CERTS_DIR" --listen-addr=127.0.0.1:26257 --sql-addr=0.0.0.0:26258 --advertise-sql-addr=mc-whitelist-db.ts.home.arpa:26258 --http-addr=127.0.0.1:8080 --store=/cockroach/cockroach-data'
+Exec=/entrypoint.sh
+EnvironmentFile=@SECRETS_PATH@
+Volume=%h/.config/containers/mc-whitelist-db/entrypoint.sh:/entrypoint.sh:ro
 Volume=mc-whitelist-db_data:/cockroach/cockroach-data:Z
-Volume=mc-whitelist-db_certs:/cockroach/certs:Z
 Network=mc-whitelist-db-tailscale.container
-PodmanArgs=--replace
+PodmanArgs=--entrypoint=/bin/sh --replace
 
 [Install]
 WantedBy=default.target

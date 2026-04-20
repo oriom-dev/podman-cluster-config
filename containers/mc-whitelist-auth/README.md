@@ -63,6 +63,12 @@ Scope decision logic is implemented as a dedicated function to support future pr
 - `DB_URL`: CockroachDB connection string.
 - `PUBLIC_BASE_URL` / `BETTER_AUTH_URL`: public URL (`https://mc.oriom.dev`).
 
+### DB_URL secret override (recommended)
+- This service loads an additional SOPS secret entry from `containers/mc-whitelist-auth/secrets.yaml`.
+- Key name: `mc-whitelist-auth_db_env`
+- Value format: envfile content (single line), for example:
+  - `DB_URL=postgresql://whitelist_auth:<strong-password>@mc-whitelist-db.ts.home.arpa:26258/defaultdb?sslmode=require`
+
 ## Operational Notes
 - This repository no longer exposes `/api/v1/whitelist`.
 - Velocity integration endpoint: `/api/v1/authorize` (single endpoint; challenge code is issued here when denied)
