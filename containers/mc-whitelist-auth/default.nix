@@ -6,9 +6,18 @@ let
 in
 {
   sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
-  podman.activeServices = [ "mc-whitelist-db" "${appName}-build" appName ];
+  podman.activeServices = [ "${appName}-build" appName "${appName}-tailscale" ];
 
   home.file =
+    helper.mkQuadlet {
+      name = "${appName}-tailscale";
+      templatePath = ../../templates/http/tailscale.container.in;
+      vars = {
+        "@APP_NAME@" = appName;
+        "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
+        "@TS_LOGIN_SERVER@" = config.podman.tailscaleLoginServer;
+      };
+    } // 
     helper.mkQuadlet {
       name = appName;
       type = "build";

@@ -12,8 +12,7 @@ Environment=DB_URL=postgresql://root@mc-whitelist-db:26258/defaultdb?sslmode=dis
 Environment=PUBLIC_BASE_URL=https://mc.oriom.dev
 Environment=BETTER_AUTH_URL=https://mc.oriom.dev
 EnvironmentFile=@SECRETS_PATH@
-Network=cluster.network
-NetworkAlias=mc-whitelist-auth
+Network=mc-whitelist-auth-tailscale.container
 PodmanArgs=--replace
 
 [Install]
