@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build --mode client && vite build",
-    "start": "node dist/index.js"
+    "start": "cd dist && node index.js"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.6.5",
