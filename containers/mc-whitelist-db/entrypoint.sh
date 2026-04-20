@@ -102,4 +102,10 @@ if [ ! -f "$BOOTSTRAP_MARKER" ]; then
   touch "$BOOTSTRAP_MARKER"
 fi
 
-exec start_node
+exec cockroach start-single-node \
+  --certs-dir="$CERTS_DIR" \
+  --listen-addr="$LISTEN_ADDR" \
+  --sql-addr="$SQL_ADDR" \
+  --advertise-sql-addr="$ADVERTISE_SQL_ADDR" \
+  --http-addr="$HTTP_ADDR" \
+  --store="$DATA_DIR"
