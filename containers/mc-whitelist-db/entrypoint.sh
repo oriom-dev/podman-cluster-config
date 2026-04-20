@@ -92,7 +92,12 @@ if [ ! -f "$BOOTSTRAP_MARKER" ]; then
 
   wait_for_sql "$bootstrap_pid"
   bootstrap_app_user
-  cockroach quit --certs-dir="$CERTS_DIR" --host="$SQL_BOOTSTRAP_ADDR" || true
+
+  if ! cockroach quit --certs-dir="$CERTS_DIR" --host="$SQL_BOOTSTRAP_ADDR" >/dev/null 2>&1; then
+    # Cockroach v25 image may not provide the legacy `quit` command.
+    kill "$bootstrap_pid" >/dev/null 2>&1 || true
+  fi
+
   wait "$bootstrap_pid" || true
   touch "$BOOTSTRAP_MARKER"
 fi
