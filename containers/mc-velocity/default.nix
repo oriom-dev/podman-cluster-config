@@ -6,6 +6,7 @@ let
 in
 {
   sops.secrets."mc-velocity_forwarding-secret" = { sopsFile = ./secrets.yaml; format = "yaml"; };
+  sops.secrets."mc-velocity_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
 
   podman.activeServices = [ "${appName}-tailscale" "${appName}-build" appName ];
 
@@ -29,6 +30,7 @@ in
       vars = {
         "@APP_NAME@" = appName;
         "@FORWARDING_SECRET_PATH@" = config.sops.secrets."mc-velocity_forwarding-secret".path;
+        "@SECRETS_PATH@" = config.sops.secrets."mc-velocity_env".path;
       };
     } // 
     {
