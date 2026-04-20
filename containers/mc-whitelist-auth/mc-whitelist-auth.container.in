@@ -13,6 +13,7 @@ Environment=PORT=3000
 Environment=PUBLIC_BASE_URL=https://mc.oriom.dev
 Environment=BETTER_AUTH_URL=https://mc.oriom.dev
 EnvironmentFile=@SECRETS_PATH@
+DNS=100.100.100.100
 
 Network=mc-whitelist-auth-tailscale.container
 PodmanArgs=--replace
