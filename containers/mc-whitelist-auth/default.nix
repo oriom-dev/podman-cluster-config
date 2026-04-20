@@ -5,6 +5,7 @@ let
   appName = "mc-whitelist-auth";
 in
 {
+  sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
   podman.activeServices = [ "mc-whitelist-db" "${appName}-build" appName ];
 
   home.file =
@@ -16,6 +17,9 @@ in
     helper.mkQuadlet {
       name = appName;
       templatePath = ./${appName}.container.in;
+      vars = {
+        "@SECRETS_PATH@" = config.sops.secrets."${appName}_env".path;
+      };
     } //
     {
       ".config/containers/build/${appName}/Containerfile".source = ./Containerfile;

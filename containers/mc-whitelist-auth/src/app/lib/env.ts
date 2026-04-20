@@ -2,46 +2,6 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { z } from 'zod';
 
-const loadEnvFileIfPresent = (): void => {
-  const envPath = resolve(process.cwd(), '.env');
-  if (!existsSync(envPath)) {
-    return;
-  }
-
-  const content = readFileSync(envPath, 'utf8');
-  const lines = content.split(/\r?\n/);
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) {
-      continue;
-    }
-
-    const equalsIndex = trimmed.indexOf('=');
-    if (equalsIndex <= 0) {
-      continue;
-    }
-
-    const key = trimmed.slice(0, equalsIndex).trim();
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key) || process.env[key] !== undefined) {
-      continue;
-    }
-
-    let value = trimmed.slice(equalsIndex + 1).trim();
-
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-
-    process.env[key] = value;
-  }
-};
-
-loadEnvFileIfPresent();
-
 const envSchema = z.object({
   DB_URL: z.string().min(1, 'DB_URL is required.'),
   PUBLIC_BASE_URL: z.string().url('PUBLIC_BASE_URL must be a valid URL.'),

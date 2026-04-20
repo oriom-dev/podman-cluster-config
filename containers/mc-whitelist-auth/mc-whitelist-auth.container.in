@@ -11,11 +11,7 @@ Environment=PORT=8787
 Environment=DB_URL=postgresql://root@mc-whitelist-db:26257/defaultdb?sslmode=disable
 Environment=PUBLIC_BASE_URL=https://mc.oriom.dev
 Environment=BETTER_AUTH_URL=https://mc.oriom.dev
-Environment=BETTER_AUTH_SECRET=
-Environment=GOOGLE_CLIENT_ID=
-Environment=GOOGLE_CLIENT_SECRET=
-Environment=ADMIN_EMAIL_ALLOWLIST=
-Environment=AUTHZ_API_TOKEN=
+EnvironmentFile=@SECRETS_PATH@
 Network=cluster.network
 NetworkAlias=mc-whitelist-auth
 PodmanArgs=--replace
