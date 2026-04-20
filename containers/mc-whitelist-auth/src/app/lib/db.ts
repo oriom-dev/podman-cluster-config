@@ -213,9 +213,26 @@ export type DbRuntimeDiagnostics = {
   dbUseLibpqCompat: string | null;
   lookupV4: string[];
   lookupV6: string[];
+  lookupV4Error: string | null;
+  lookupV6Error: string | null;
   lookupError: string | null;
   resolvConfHead: string[];
   resolvConfError: string | null;
+};
+
+const lookupByFamily = async (
+  host: string,
+  family: 4 | 6
+): Promise<{ addresses: string[]; error: string | null }> => {
+  try {
+    const records = await lookup(host, { family, all: true });
+    return { addresses: records.map((item) => item.address), error: null };
+  } catch (error) {
+    return {
+      addresses: [],
+      error: error instanceof Error ? error.message : `unknown IPv${family} lookup error`
+    };
+  }
 };
 
 const readResolvConfHead = async (): Promise<{ lines: string[]; error: string | null }> => {
@@ -252,44 +269,34 @@ export const getDbRuntimeDiagnostics = async (): Promise<DbRuntimeDiagnostics> =
       dbUseLibpqCompat,
       lookupV4: [],
       lookupV6: [],
+      lookupV4Error: null,
+      lookupV6Error: null,
       lookupError: 'DB_URL host is missing or invalid',
       resolvConfHead: resolvConf.lines,
       resolvConfError: resolvConf.error
     };
   }
 
-  try {
-    const [v4, v6] = await Promise.all([
-      lookup(dbHost, { family: 4, all: true }),
-      lookup(dbHost, { family: 6, all: true })
-    ]);
+  const [v4, v6] = await Promise.all([lookupByFamily(dbHost, 4), lookupByFamily(dbHost, 6)]);
+  const lookupError =
+    v4.addresses.length === 0 && v6.addresses.length === 0
+      ? [v4.error, v6.error].filter(Boolean).join(' | ') || 'no DNS records found'
+      : null;
 
-    return {
-      dbHost,
-      dbPort,
-      dbProtocol,
-      dbSslMode,
-      dbUseLibpqCompat,
-      lookupV4: v4.map((item) => item.address),
-      lookupV6: v6.map((item) => item.address),
-      lookupError: null,
-      resolvConfHead: resolvConf.lines,
-      resolvConfError: resolvConf.error
-    };
-  } catch (error) {
-    return {
-      dbHost,
-      dbPort,
-      dbProtocol,
-      dbSslMode,
-      dbUseLibpqCompat,
-      lookupV4: [],
-      lookupV6: [],
-      lookupError: error instanceof Error ? error.message : 'unknown lookup error',
-      resolvConfHead: resolvConf.lines,
-      resolvConfError: resolvConf.error
-    };
-  }
+  return {
+    dbHost,
+    dbPort,
+    dbProtocol,
+    dbSslMode,
+    dbUseLibpqCompat,
+    lookupV4: v4.addresses,
+    lookupV6: v6.addresses,
+    lookupV4Error: v4.error,
+    lookupV6Error: v6.error,
+    lookupError,
+    resolvConfHead: resolvConf.lines,
+    resolvConfError: resolvConf.error
+  };
 };
 
 export const ensureSchema = async (): Promise<void> => {
