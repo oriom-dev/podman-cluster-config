@@ -17,8 +17,8 @@ Environment=AUTHZ_CHALLENGE_URL=http://mc-whitelist-auth:8787/api/v1/challenge
 Environment=AUTHZ_DEFAULT_HOST=mc.oriom.dev
 Environment=AUTHZ_TIMEOUT_MS=2500
 Environment=AUTHZ_FAIL_OPEN=false
-Environment=AUTHZ_DENY_MESSAGE=You are not authorized for this host.
-Environment=AUTHZ_DENY_MESSAGE_PREFIX=Open this URL to verify access:
+Environment="AUTHZ_DENY_MESSAGE=You are not authorized for this host."
+Environment="AUTHZ_DENY_MESSAGE_PREFIX=Open this URL to verify access:"
 
 Environment=MINECRAFT_VERSION=1.21.11
 Environment=MODRINTH_PROJECTS=viaversion,viabackwards
