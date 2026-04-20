@@ -1,6 +1,7 @@
 import { createRoute } from 'honox/factory';
 import { auth, isGoogleAuthConfigured } from '../lib/auth';
 import { isAdminEmail } from '../lib/db';
+import styles from '../styles/home.module.css';
 
 export default createRoute(async (c) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
@@ -11,20 +12,20 @@ export default createRoute(async (c) => {
   const error = c.req.query('error');
 
   return c.render(
-    <section class='panel'>
-      <h2 class='title'>Minecraftアカウント認証</h2>
-      <p class='lead'>サーバー参加時に表示される案内リンクから認証を完了してください。</p>
-      {notice ? <p class='success'>{notice}</p> : null}
-      {error ? <p class='warning'>{error}</p> : null}
+    <section class={styles.panel}>
+      <h2 class={styles.title}>Minecraftアカウント認証</h2>
+      <p class={styles.lead}>サーバー参加時に表示される案内リンクから認証を完了してください。</p>
+      {notice ? <p class={styles.success}>{notice}</p> : null}
+      {error ? <p class={styles.warning}>{error}</p> : null}
 
       {!user ? (
         isGoogleAuthConfigured ? (
-          <div class='signInCard'>
-            <form method='post' action='/auth/start' class='form'>
+          <div class={styles.signInCard}>
+            <form method='post' action='/auth/start' class={styles.form}>
               <input type='hidden' name='provider' value='google' />
               <input type='hidden' name='next' value='/' />
-              <button class='googleButton' type='submit'>
-                <span class='googleLogo' aria-hidden='true'>
+              <button class={styles.googleButton} type='submit'>
+                <span class={styles.googleLogo} aria-hidden='true'>
                   <svg viewBox='0 0 48 48' width='20' height='20'>
                     <path
                       fill='#FFC107'
@@ -44,7 +45,7 @@ export default createRoute(async (c) => {
                     />
                   </svg>
                 </span>
-                <span class='googleButtonText'>
+                <span class={styles.googleButtonText}>
                   <strong>Googleでログイン</strong>
                   <small>認証を続ける</small>
                 </span>
@@ -52,21 +53,21 @@ export default createRoute(async (c) => {
             </form>
           </div>
         ) : (
-          <p class='warning'>Googleログインの設定が未完了です。管理者へ連絡してください。</p>
+          <p class={styles.warning}>Googleログインの設定が未完了です。管理者へ連絡してください。</p>
         )
       ) : (
         <>
-          <p class='meta'>{user.email} でログイン中です。</p>
-          <p class='meta'>サーバーで表示された案内リンクを開くと認証できます。</p>
+          <p class={styles.meta}>{user.email} でログイン中です。</p>
+          <p class={styles.meta}>サーバーで表示された案内リンクを開くと認証できます。</p>
 
-          <div class='row'>
+          <div class={styles.row}>
             {isAdmin ? (
-              <a class='buttonSecondary' href='/admin'>
+              <a class={styles.buttonSecondary} href='/admin'>
                 管理ポリシーパネル
               </a>
             ) : null}
             <form method='post' action='/auth/sign-out'>
-              <button class='buttonSecondary' type='submit'>
+              <button class={styles.buttonSecondary} type='submit'>
                 ログアウト
               </button>
             </form>
