@@ -1,0 +1,13 @@
+{
+  "tagOwners": {
+    "tag:ingress": ["cluster"],
+    "tag:worker": ["cluster"]
+  },
+  "acls": [
+    {
+      "action": "accept",
+      "src": ["tag:ingress"],
+      "dst": ["tag:worker:3000"]
+    }
+  ]
+}

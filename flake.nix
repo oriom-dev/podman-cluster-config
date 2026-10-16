@@ -1,34 +1,35 @@
 {
-  description = "Hybrid Podman Cluster Management";
+  description = "NixOS configuration for the Oriom multi-region Podman cluster";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
+    nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
+    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, home-manager, sops-nix }: {
-    homeConfigurations = {
-      "ubuntu@kagoya_vps" = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs { system = "x86_64-linux"; };
-        modules = [
-          sops-nix.homeManagerModules.sops
-          ./hosts/kagoya_vps/default.nix
-        ];
+  outputs = { nixpkgs, disko, nixos-wsl, sops-nix, ... }:
+    let
+      system = "x86_64-linux";
+      mkHost = modules: nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = modules;
       };
-      "ubuntu@home_desktop" = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs { system = "x86_64-linux"; };
-        modules = [
-          sops-nix.homeManagerModules.sops
-          ./hosts/home_desktop/default.nix
+    in {
+      nixosConfigurations = {
+        kagoya-vps = mkHost [
+          disko.nixosModules.disko
+          sops-nix.nixosModules.sops
+          ./hosts/kagoya_vps
+        ];
+        home-desktop = mkHost [
+          nixos-wsl.nixosModules.default
+          sops-nix.nixosModules.sops
+          ./hosts/home_desktop
         ];
       };
     };
-  };
 }

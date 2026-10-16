@@ -1,35 +1,31 @@
-{ config, pkgs, lib, ... }:
-
-let
-  # 稼働させるコンテナモジュールのリスト
-  activeModules = [
-    "cluster-network"
-    "headscale"
-    "caddy"
-    "hello-world"
-    "jpost-api"
-    "mc-whitelist-db"
-    "mc-whitelist-auth"
-    "mc-velocity"
-    "mc-lobby"
-    "mc-tompedia-lobby"
-  ];
-in
+{ ... }:
 {
   imports = [
-    ../../lib/podman-options.nix
-    ../../lib/podman-host.nix
-    ../../lib/mc-admin.nix
-  ] ++ map (name: ../../containers/${name}/default.nix) activeModules;
+    ../common
+    ./disko.nix
+    ../../containers/headscale
+    ../../containers/caddy
+  ];
 
-  sops.secrets."tailscale_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
-  podman.tailscaleAuthKeyPath = config.sops.secrets."tailscale_env".path;
+  networking = {
+    hostName = "kagoya-vps";
+    useDHCP = false;
+    interfaces.enp3s0.ipv4.addresses = [
+      { address = "133.18.180.180"; prefixLength = 23; }
+      { address = "10.150.11.1"; prefixLength = 24; }
+    ];
+    defaultGateway = "133.18.180.1";
+    nameservers = [ "1.1.1.1" "1.0.0.1" ];
+    firewall = {
+      allowedTCPPorts = [ 22 80 443 ];
+      allowedUDPPorts = [ 443 ];
+    };
+  };
 
-  # --- これより下はホストシステム固有の最小設定 ---
-  home.username = "ubuntu";
-  home.homeDirectory = "/home/ubuntu";
-  home.stateVersion = "23.11";
+  boot.loader = {
+    systemd-boot.enable = true;
+    efi.canTouchEfiVariables = true;
+  };
 
-  # SOPSのグローバル設定
-  sops.age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+  system.stateVersion = "26.05";
 }
