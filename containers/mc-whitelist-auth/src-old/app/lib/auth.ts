@@ -1,6 +1,6 @@
-import { drizzleAdapter } from '@better-auth/drizzle-adapter';
+import { kyselyAdapter } from '@better-auth/kysely-adapter';
 import { betterAuth } from 'better-auth';
-import { db, schema } from './db';
+import { db } from './db';
 import { env } from './env';
 
 const betterAuthBaseUrl = env.BETTER_AUTH_URL;
@@ -11,19 +11,18 @@ const googleClientSecret = env.GOOGLE_CLIENT_SECRET;
 export const auth = betterAuth({
   appName: 'Oriom Minecraft Auth',
   baseURL: betterAuthBaseUrl,
-  database: drizzleAdapter(db, {
-    provider: 'pg',
-    schema
+  database: kyselyAdapter(db, {
+    type: 'postgres'
   }),
+  emailAndPassword: {
+    enabled: false
+  },
   socialProviders: {
     google: {
       clientId: googleClientId,
       clientSecret: googleClientSecret,
       prompt: 'select_account'
     }
-  },
-  emailAndPassword: {
-    enabled: false
   },
   databaseHooks: {
     user: {

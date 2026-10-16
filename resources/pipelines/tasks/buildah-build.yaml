@@ -1,0 +1,27 @@
+$schema: https://kubernetesjsonschema.dev/master-standalone-strict/task-tekton-v1.json
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: buildah-build
+  namespace: default
+spec:
+  params:
+  - name: IMAGE
+    description: Push先のイメージ名 (例: registry.infrastructure.svc.../my-app)
+  - name: CONTEXT_DIR
+    description: ソースコード内のビルド対象ディレクトリ (例: src/web-app-1)
+    default: "."
+  workspaces:
+  - name: source
+  steps:
+  - name: build-and-push
+    image: quay.io/buildah/stable:latest
+    securityContext:
+      privileged: true # Buildahの実行には特権コンテナが必要
+    workingDir: $(workspaces.source.path)/$(params.CONTEXT_DIR)
+    script: |
+      #!/bin/sh
+      # 1. Containerfileを使用してビルド
+      buildah bud --tls-verify=false -f Containerfile -t $(params.IMAGE) .
+      # 2. ローカルレジストリへプッシュ
+      buildah push --tls-verify=false $(params.IMAGE) docker://$(params.IMAGE)

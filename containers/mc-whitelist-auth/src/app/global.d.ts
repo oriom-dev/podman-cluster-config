@@ -1,4 +1,8 @@
-declare module '*.module.css' {
-  const classes: Record<string, string>;
-  export default classes;
+import type {} from 'hono'
+
+declare module 'hono' {
+  interface Env {
+    Variables: {}
+    Bindings: {}
+  }
 }
