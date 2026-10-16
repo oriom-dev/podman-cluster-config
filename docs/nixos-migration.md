@@ -4,20 +4,22 @@
 
 `kagoya-vps` replaces the current Ubuntu disk. It is intentionally destructive: `hosts/kagoya_vps/disko.nix` repartitions `/dev/vda` as a 1 GiB EFI System Partition and an ext4 root filesystem.
 
-1. On the workstation, ensure `ssh kagoya_default_podman` reaches `133.18.180.180` as `ubuntu`. The SSH public key used by that connection must be in the VPS's `~ubuntu/.ssh/authorized_keys`.
-2. Set the domain DNS A/AAAA records for `headscale.oriom.dev` and every Caddy hostname to the VPS, before starting the install. Caddy needs TCP 80/443 reachable for ACME.
+1. On the workstation, ensure `ssh kagoya_default_podman` reaches `133.18.180.180` as `ubuntu`. The dedicated deployment key is declared for the NixOS `operator` account in `hosts/kagoya_vps/default.nix`; keep its private half outside Git.
+2. Set an A record (not AAAA until IPv6 is configured) for `headscale.oriom.dev` to `133.18.180.180`, before starting the install. Caddy needs TCP 80/443 reachable for ACME.
 3. From the repository root, run:
 
    ```sh
    nix run github:nix-community/nixos-anywhere -- \
      --flake .#kagoya-vps \
-     --target-host ubuntu@133.18.180.180
+     --target-host ubuntu@133.18.180.180 \
+     --copy-host-keys
    ```
 
    This copies the configuration, kexecs into NixOS, formats `/dev/vda`, and installs the new system. Keep the Kagoya console open: incorrect network settings can otherwise lock out SSH.
-4. After the new system boots, join its host Tailscale client to Headscale. Do not put an auth key in Git:
+4. After the new system boots, log in as `operator`, then join its host Tailscale client to Headscale. Do not put an auth key in Git:
 
    ```sh
+   ssh -i ~/.ssh/kagoya_nixos operator@133.18.180.180
    sudo tailscale up --login-server https://headscale.oriom.dev --hostname kagoya-vps
    ```
 
