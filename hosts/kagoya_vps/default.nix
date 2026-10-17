@@ -1,12 +1,34 @@
-{ ... }:
+{ config, inputs, ... }:
 {
   imports = [
     ../common
     ./disko.nix
     ../../containers/headscale
     ../../containers/caddy
-    ../../containers/cluster-hello
+    (inputs.happyview + "/appview/happyview")
   ];
+
+  sops.age.keyFile = "/var/lib/sops-nix/key.txt";
+  sops.secrets = {
+    happyview_session_secret = {
+      sopsFile = ../../containers/happyview/secrets.yaml;
+      format = "yaml";
+    };
+    happyview_token_encryption_key = {
+      sopsFile = ../../containers/happyview/secrets.yaml;
+      format = "yaml";
+    };
+  };
+  sops.templates."happyview.env".content = ''
+    SESSION_SECRET=${config.sops.placeholder.happyview_session_secret}
+    TOKEN_ENCRYPTION_KEY=${config.sops.placeholder.happyview_token_encryption_key}
+  '';
+
+  services.happyview = {
+    enable = true;
+    publicUrl = "https://appview.oriom.dev";
+    environmentFile = config.sops.templates."happyview.env".path;
+  };
 
   networking = {
     hostName = "kagoya-vps";

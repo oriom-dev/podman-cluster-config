@@ -36,6 +36,23 @@
         "type": "github"
       }
     },
+    "happyview": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792209043,
+        "narHash": "sha256-InXJu6LEijLT6ztHNQdkPAaV7BPRRlrR8NpUEcwY+QE=",
+        "owner": "jphacks",
+        "repo": "sd_2607",
+        "rev": "484ed46f9372abfca4d50abc95b26a3cebde7948",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jphacks",
+        "ref": "feature/appview",
+        "repo": "sd_2607",
+        "type": "github"
+      }
+    },
     "nixos-wsl": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -77,6 +94,7 @@
     "root": {
       "inputs": {
         "disko": "disko",
+        "happyview": "happyview",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs",
         "sops-nix": "sops-nix"

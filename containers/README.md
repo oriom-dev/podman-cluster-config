@@ -1,6 +1,6 @@
 # Containers
 
-Each service lives in `containers/<name>/default.nix` and is imported only by the host that runs it. The smallest working example is `cluster-hello`: it runs on `kagoya-vps`, binds TCP/3000 to loopback only, and Caddy is its public entry point.
+Each service lives in `containers/<name>/default.nix` and is imported only by the host that runs it. The smallest working example is `cluster-hello`: bind a VPS-local service to loopback and use Caddy as its public entry point.
 
 To add a server, copy `containers/cluster-hello`, change its image, command, and port, then:
 
