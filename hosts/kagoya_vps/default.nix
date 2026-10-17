@@ -14,7 +14,14 @@
       { address = "133.18.180.180"; prefixLength = 23; }
       { address = "10.150.11.1"; prefixLength = 24; }
     ];
+    interfaces.enp3s0.ipv6.addresses = [
+      { address = "2406:8c00:0:3462:133:18:180:180"; prefixLength = 64; }
+    ];
     defaultGateway = "133.18.180.1";
+    defaultGateway6 = {
+      address = "2406:8c00:0:3462::1";
+      interface = "enp3s0";
+    };
     nameservers = [ "1.1.1.1" "1.0.0.1" ];
     firewall = {
       allowedTCPPorts = [ 22 80 443 ];
