@@ -23,6 +23,24 @@
    sudo tailscale up --login-server https://headscale.oriom.dev --hostname kagoya-vps
    ```
 
+## Mosimo PDS on Kagoya VPS
+
+`flake.nix` pins the external `jphacks/sd_2607` non-flake input; the VPS imports its `pds` module. The service runs natively as `mosimo-pds` with Node.js 24 and SQLite, without an OCI registry or separate database process. Caddy forwards `https://pds.oriom.dev` to loopback port 2583; set its DNS A record to `133.18.180.180` before activation.
+
+SQLite data lives in `/var/lib/mosimo-pds/pds.sqlite` on the VPS's persistent local disk. This is a single-node deployment: never share this file over a network filesystem or load-balance the same logical PDS across independent databases. The PDS has a 256 MiB Node old-space limit and systemd `MemoryHigh=384M` / `MemoryMax=512M`; measure actual usage alongside other services on the 3 GiB VPS.
+
+After reviewing input updates, build locally, then activate on the VPS:
+
+```sh
+nix build .#nixosConfigurations.kagoya-vps.config.system.build.toplevel
+sudo nixos-rebuild switch --flake .#kagoya-vps
+systemctl status mosimo-pds
+curl http://127.0.0.1:2583/health
+curl https://pds.oriom.dev/health
+```
+
+Do not bypass SSH host-key verification to deploy. Confirm any changed key through the VPS console or another trusted channel first. Back up SQLite with its online backup API (for example, `sqlite3 .backup`) or stop the service before copying the database and any WAL/SHM files consistently. Never restore an older database under the same public endpoint without resolving firehose sequence continuity. See the imported `pds/deployment.md` for detailed backup and PostgreSQL opt-in instructions.
+
 ## Home desktop (NixOS-WSL)
 
 Import a NixOS-WSL release, then apply this repository's configuration from inside the NixOS WSL distribution:

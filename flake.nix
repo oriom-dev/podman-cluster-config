@@ -9,6 +9,10 @@
     nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+    mosimo = {
+      url = "github:jphacks/sd_2607/main";
+      flake = false;
+    };
     happyview = {
       url = "github:jphacks/sd_2607/feature/appview";
       flake = false;

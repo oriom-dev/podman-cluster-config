@@ -6,6 +6,7 @@
     ../../containers/headscale
     ../../containers/caddy
     (inputs.happyview + "/appview/happyview")
+    (inputs.mosimo + "/pds")
   ];
 
   sops.age.keyFile = "/var/lib/sops-nix/key.txt";
@@ -28,6 +29,13 @@
     enable = true;
     publicUrl = "https://appview.oriom.dev";
     environmentFile = config.sops.templates."happyview.env".path;
+  };
+
+  services.mosimo-pds = {
+    enable = true;
+    settings.groups = [
+      { id = "oriom"; endpoint = "https://pds.oriom.dev"; }
+    ];
   };
 
   networking = {

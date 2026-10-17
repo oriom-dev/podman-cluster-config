@@ -53,6 +53,23 @@
         "type": "github"
       }
     },
+    "mosimo": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792277252,
+        "narHash": "sha256-94cYa9FmQb9utSGFxPyyq32jvEbED7raoWR6uz2s7Yo=",
+        "owner": "jphacks",
+        "repo": "sd_2607",
+        "rev": "0fba13f4eb58f8349cbb61ed24e495d017ba5acb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jphacks",
+        "ref": "main",
+        "repo": "sd_2607",
+        "type": "github"
+      }
+    },
     "nixos-wsl": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -95,6 +112,7 @@
       "inputs": {
         "disko": "disko",
         "happyview": "happyview",
+        "mosimo": "mosimo",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs",
         "sops-nix": "sops-nix"
