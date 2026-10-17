@@ -26,6 +26,7 @@
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
   };
+  boot.initrd.availableKernelModules = [ "virtio_pci" "virtio_blk" ];
 
   users.users.operator = {
     isNormalUser = true;

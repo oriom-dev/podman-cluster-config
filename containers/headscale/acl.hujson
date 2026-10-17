@@ -1,7 +1,7 @@
 {
   "tagOwners": {
-    "tag:ingress": ["cluster"],
-    "tag:worker": ["cluster"]
+    "tag:ingress": ["cluster@local"],
+    "tag:worker": ["cluster@local"]
   },
   "acls": [
     {

@@ -11,11 +11,12 @@
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { nixpkgs, disko, nixos-wsl, sops-nix, ... }:
+  outputs = inputs@{ nixpkgs, disko, nixos-wsl, sops-nix, ... }:
     let
       system = "x86_64-linux";
       mkHost = modules: nixpkgs.lib.nixosSystem {
         inherit system;
+        specialArgs = { inherit inputs; };
         modules = modules;
       };
     in {
