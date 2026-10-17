@@ -5,6 +5,7 @@
     ./disko.nix
     ../../containers/headscale
     ../../containers/caddy
+    ../../containers/cluster-hello
   ];
 
   networking = {

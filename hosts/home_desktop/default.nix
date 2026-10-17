@@ -2,7 +2,6 @@
 {
   imports = [
     ../common
-    ../../containers/cluster-hello
   ];
 
   wsl = {
