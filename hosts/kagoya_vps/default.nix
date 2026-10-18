@@ -33,9 +33,12 @@
 
   services.mosimo-pds = {
     enable = true;
-    settings.groups = [
-      { id = "oriom"; endpoint = "https://pds.oriom.dev"; }
-    ];
+    settings = {
+      groups = [
+        { id = "oriom"; endpoint = "https://pds.oriom.dev"; }
+      ];
+      relays = [ "wss://relay.damus.io" ];
+    };
   };
 
   networking = {

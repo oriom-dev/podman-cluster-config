@@ -29,6 +29,8 @@
 
 SQLite data lives in `/var/lib/mosimo-pds/pds.sqlite` on the VPS's persistent local disk. This is a single-node deployment: never share this file over a network filesystem or load-balance the same logical PDS across independent databases. The PDS has a 256 MiB Node old-space limit and systemd `MemoryHigh=384M` / `MemoryMax=512M`; measure actual usage alongside other services on the 3 GiB VPS.
 
+The VPS collects protocol kind-1 events and kind-5 deletion requests from `wss://relay.damus.io`. The pinned runtime includes fixes for the real PLC Directory response format and upstream history backpressure. Production verification on 2026-10-18 covered eight signed commits, out-of-order recovery, MST/CAR/firehose integrity, history and fresh live collection from Damus, and persistence after restarting the service. This is not a generic Nostr relay (only kinds 1/5 are accepted); `bsky.network` rejected its crawl request, so external atproto Relay ingestion is not yet compatible. See the [production verification report](https://github.com/jphacks/sd_2607/blob/main/docs/pds-production-verification-2026-10-18.md) for evidence and limitations.
+
 After reviewing input updates, build locally, then activate on the VPS:
 
 ```sh
