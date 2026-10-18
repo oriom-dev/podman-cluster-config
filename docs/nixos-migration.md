@@ -43,6 +43,27 @@ curl https://pds.oriom.dev/health
 
 Do not bypass SSH host-key verification to deploy. Confirm any changed key through the VPS console or another trusted channel first. Back up SQLite with its online backup API (for example, `sqlite3 .backup`) or stop the service before copying the database and any WAL/SHM files consistently. Never restore an older database under the same public endpoint without resolving firehose sequence continuity. See the imported `pds/deployment.md` for detailed backup and PostgreSQL opt-in instructions.
 
+## Mosimo web on Kagoya VPS
+
+The VPS imports `(inputs.mosimo + "/apps/web")` and enables `services.mosimo-web` with `domain = "mosimo.oriom.dev"`. The module serves only `index.html` from the Nix store through the existing Caddy service, with automatic HTTPS; it adds no container, application port, or persistent state. The browser uses `https://appview.oriom.dev` for the feed.
+
+Set the DNS A record for `mosimo.oriom.dev` to `133.18.180.180`. Only add an AAAA record if IPv6 reachability has been verified. TCP 80/443 must reach Caddy for certificate issuance.
+
+The `mosimo` input must include the new `apps/web/default.nix` before a normal flake build can succeed. After publishing the module to `jphacks/sd_2607/main`, update and review the pin (this also updates the imported PDS and BSAF code), then build and activate:
+
+```sh
+nix flake update mosimo
+nix build .#nixosConfigurations.kagoya-vps.config.system.build.toplevel
+sudo nixos-rebuild switch --flake .#kagoya-vps
+curl -fsS https://mosimo.oriom.dev/
+curl -fsS -D - -o /dev/null -H 'Origin: https://mosimo.oriom.dev' \
+  https://appview.oriom.dev/xrpc/dev.oriom.mosimo.getFeed
+```
+
+For an unpublished local checkout, use `--override-input mosimo path:/absolute/path/to/sd_2607 --no-write-lock-file` on the build and rebuild commands. Do not commit a workstation-specific path to `flake.lock`. Until DNS is configured, the HTTPS endpoint cannot obtain a certificate. `curl -I -H 'Host: mosimo.oriom.dev' http://127.0.0.1/` on the VPS can check the HTTP-to-HTTPS redirect, but does not verify HTTPS or HTML delivery. Check `journalctl -u caddy` for ACME failures.
+
+Deployment check on 2026-10-18: built and activated with a temporary local input containing the pinned PDS/BSAF sources and web HTML from `e7b99de` plus the new module; `flake.lock` was not changed. Caddy, PDS, BSAF, HappyView, and Headscale were active after activation; PDS `/health` returned `{"ok":true}`, the new hostname redirected HTTP to HTTPS, and AppView returned HTTP 200 with `Access-Control-Allow-Origin: https://mosimo.oriom.dev`. Public HTTPS remains blocked: authoritative DNS returned NXDOMAIN and Caddy's ACME request failed for that reason. Add the A record above to complete publication.
+
 ## Home desktop (NixOS-WSL)
 
 Import a NixOS-WSL release, then apply this repository's configuration from inside the NixOS WSL distribution:

@@ -8,6 +8,7 @@
     (inputs.happyview + "/appview/happyview")
     (inputs.mosimo + "/pds")
     (inputs.mosimo + "/appview/bsaf")
+    (inputs.mosimo + "/apps/web")
   ];
 
   sops.age.keyFile = "/var/lib/sops-nix/key.txt";
@@ -32,10 +33,26 @@
     environmentFile = config.sops.templates."happyview.env".path;
   };
 
+  services.mosimo-web = {
+    enable = true;
+    domain = "mosimo.oriom.dev";
+  };
+
   services.mosimo-bsaf = {
     enable = true;
     # jma-alert-bot.bsky.social (unofficial); handle and PLC document checked 2026-10-18.
-    authors = [ "did:plc:vwi7zhfyamyvrg5v6ycjgzxi" ];
+    authors = [
+      "did:plc:vwi7zhfyamyvrg5v6ycjgzxi"
+      "did:plc:kxwz5cz7o6g4jlmxh6doyfsm"
+    ];
+    publisher = {
+      enable = true;
+      selectJmaDefaults = true;
+      selectKikikuruDefaults = true;
+      credentialsFile = "/var/lib/mosimo-importer/credentials.json";
+      trustFile = "/var/lib/mosimo-importer/roots.json";
+      relayUrl = "wss://pds.oriom.dev";
+    };
   };
 
   services.mosimo-pds = {
@@ -45,8 +62,15 @@
         { id = "oriom"; endpoint = "https://pds.oriom.dev"; }
       ];
       relays = [ "wss://relay.damus.io" ];
+      publicInformation = (builtins.fromJSON
+        (builtins.readFile ./mosimo-public-information.json)).publicInformation;
     };
   };
+
+  systemd.tmpfiles.rules = [
+    "d /var/lib/mosimo-importer 0700 root root -"
+    "d /var/lib/mosimo-trust 0750 root caddy -"
+  ];
 
   networking = {
     hostName = "kagoya-vps";
