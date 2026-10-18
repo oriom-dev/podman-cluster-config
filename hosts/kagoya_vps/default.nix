@@ -76,6 +76,16 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN/h11zIoUgksb0ETTk8aTeo5Ehcmv8uw349rACSIbUO"
     ];
   };
+  users.users.yoyochinese = {
+    isNormalUser = true;
+    extraGroups = [ "systemd-journal" ];
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJkxwuOH/EFWeLTw5FQ04ykp4gsBdBIPyQCLLsEQNwCf"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvSkRVaE6QpiU4lZ9ZHduRA2yBt4OSw9rnxdlsOCk8A"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOkXaezMsjAGbyjfJ6QQ0lT1UPx07ADGGqQtcivbyz0h"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICDgqjOdYvZurHyY7gNdZhrQGP+rDPeAjBUd8GofzoxQ"
+    ];
+  };
   security.sudo.wheelNeedsPassword = false;
 
   system.stateVersion = "26.05";
