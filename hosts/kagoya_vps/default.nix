@@ -7,6 +7,7 @@
     ../../containers/caddy
     (inputs.happyview + "/appview/happyview")
     (inputs.mosimo + "/pds")
+    (inputs.mosimo + "/appview/bsaf")
   ];
 
   sops.age.keyFile = "/var/lib/sops-nix/key.txt";
@@ -29,6 +30,12 @@
     enable = true;
     publicUrl = "https://appview.oriom.dev";
     environmentFile = config.sops.templates."happyview.env".path;
+  };
+
+  services.mosimo-bsaf = {
+    enable = true;
+    # No implicit Bot approval: add original Bot DIDs explicitly before collection.
+    authors = [ ];
   };
 
   services.mosimo-pds = {
