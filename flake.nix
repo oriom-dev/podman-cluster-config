@@ -14,7 +14,7 @@
       flake = false;
     };
     happyview = {
-      url = "github:jphacks/sd_2607/feature/appview";
+      url = "github:jphacks/sd_2607/main";
       flake = false;
     };
   };
