@@ -64,6 +64,12 @@ For an unpublished local checkout, use `--override-input mosimo path:/absolute/p
 
 Deployment check on 2026-10-18: built and activated with a temporary local input containing the pinned PDS/BSAF sources and web HTML from `e7b99de` plus the new module; `flake.lock` was not changed. Caddy, PDS, BSAF, HappyView, and Headscale were active after activation; PDS `/health` returned `{"ok":true}`, the new hostname redirected HTTP to HTTPS, and AppView returned HTTP 200 with `Access-Control-Allow-Origin: https://mosimo.oriom.dev`. Public HTTPS remains blocked: authoritative DNS returned NXDOMAIN and Caddy's ACME request failed for that reason. Add the A record above to complete publication.
 
+## Scoped BSAF importer production activation
+
+The approved 2026-10-19 JST deployment now uses a normal GitHub-pinned server-only Mosimo revision, enables the exact JMA five + Kikikuru 23 publisher scope, and serves the public root-signed snapshot through Caddy. The importer genesis is registered in PLC Directory; worker-only credentials use systemd `LoadCredential`. Root/PLC private keys remain on the secured local issuer, not the VPS.
+
+See [production evidence and device-worker handoff](mosimo-production-2026-10-19.md) for revisions, consistent SQLite backups, service/endpoint checks, genuine source URI/CID/EVENT IDs, absolute deadlines, and the local Windows 30-minute snapshot task. That task requires the issuer to stay awake and its user logged on; snapshot expiry must remain fail-closed. Public web HTTPS returned 200 during this deployment, superseding the earlier DNS-blocked web check above.
+
 ## Home desktop (NixOS-WSL)
 
 Import a NixOS-WSL release, then apply this repository's configuration from inside the NixOS WSL distribution:
