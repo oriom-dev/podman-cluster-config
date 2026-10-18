@@ -34,8 +34,8 @@
 
   services.mosimo-bsaf = {
     enable = true;
-    # No implicit Bot approval: add original Bot DIDs explicitly before collection.
-    authors = [ ];
+    # jma-alert-bot.bsky.social (unofficial); handle and PLC document checked 2026-10-18.
+    authors = [ "did:plc:vwi7zhfyamyvrg5v6ycjgzxi" ];
   };
 
   services.mosimo-pds = {
