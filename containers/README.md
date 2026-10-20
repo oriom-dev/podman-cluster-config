@@ -10,6 +10,8 @@ To add a server, copy `containers/cluster-hello`, change its image, command, and
 
 Do not publish application ports on the VPS. Caddy is the sole public web entry point; inter-node traffic uses the host Tailscale interface and Headscale ACLs.
 
+Temporary exception: `omni-tcp-probe` exposes only 9682/TCP for a receive-only cellular connectivity investigation. It is not a web service. See its README for capture limits and removal instructions; remove its host import after the investigation.
+
 ## Containers from another public repository
 
 Add the public monorepo as a non-flake input in `flake.nix`. `flake.lock` pins the resolved revision, so deployment does not follow an unreviewed branch update.

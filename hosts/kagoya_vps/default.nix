@@ -5,6 +5,7 @@
     ./disko.nix
     ../../containers/headscale
     ../../containers/caddy
+    ../../containers/omni-tcp-probe
     (inputs.happyview + "/appview/happyview")
     (inputs.mosimo + "/pds")
     (inputs.mosimo + "/appview/bsaf")
