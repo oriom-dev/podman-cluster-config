@@ -1,11 +1,11 @@
-FROM docker.io/library/node:20-alpine AS builder
+FROM docker.io/library/node:26-alpine AS builder
 WORKDIR /app
 
 COPY src/ ./
 RUN npm ci
 RUN npm run build
 
-FROM docker.io/library/node:20-alpine AS runner
+FROM docker.io/library/node:26-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
