@@ -9,19 +9,19 @@
   },
   "private": true,
   "dependencies": {
-    "better-auth": "^1.6.9",
-    "hono": "^4.12.15",
-    "honox": "0.1.55",
-    "zod": "^4.3.6"
+    "better-auth": "^1.7.12",
+    "hono": "^4.13.13",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260420.1",
+    "@cloudflare/workers-types": "^5.20261024.1",
     "@hono/vite-build": "^1.11.1",
-    "@hono/vite-dev-server": "^0.25.2",
-    "@tailwindcss/vite": "^4.2.2",
-    "@types/node": "^25.6.0",
-    "tailwindcss": "^4.2.2",
-    "vite": "^8.0.9",
-    "wrangler": "^4.83.0"
+    "@hono/vite-dev-server": "^0.26.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.6.5",
+    "honox": "^0.1.62",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.5",
+    "wrangler": "^4.152.0"
   }
 }
