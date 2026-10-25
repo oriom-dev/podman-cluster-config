@@ -106,6 +106,7 @@
     extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN/h11zIoUgksb0ETTk8aTeo5Ehcmv8uw349rACSIbUO"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB4uhy8T5GnGe+G53esadrdShscQvJruH+Gwa53WxCEm"
     ];
   };
   users.users.yoyochinese = {
