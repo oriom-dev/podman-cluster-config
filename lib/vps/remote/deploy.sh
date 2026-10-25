@@ -16,7 +16,7 @@ test_deploy() {
 
   start_transaction deploy "$expected_commit" "$new_system" "$old_system"
   activate test "$new_system" || fail 'test activation failed'
-  wait_for_health || fail 'health checks failed after test activation'
+  wait_for_health cluster-hello || fail 'health checks failed after test activation'
   [[ $(readlink -e /run/current-system) == "$new_system" ]] || fail 'test system is not active'
   [[ $(readlink -e /nix/var/nix/profiles/system) == "$old_system" ]] ||
     fail 'test activation changed the persistent system'
@@ -38,10 +38,10 @@ switch_deploy() {
   [[ $(readlink -e /run/current-system) == "$TX_NEW_SYSTEM" ]] || fail 'tested system is not active'
   [[ $(readlink -e /nix/var/nix/profiles/system) == "$TX_OLD_SYSTEM" ]] ||
     fail 'persistent system changed before switch'
-  wait_for_health || fail 'tested system is unhealthy on the fresh SSH connection'
+  wait_for_health cluster-hello || fail 'tested system is unhealthy on the fresh SSH connection'
   advance_checkout "$TX_COMMIT"
   activate switch "$TX_NEW_SYSTEM" || fail 'persistent switch failed'
-  wait_for_health || fail 'health checks failed after persistent switch'
+  wait_for_health cluster-hello || fail 'health checks failed after persistent switch'
   [[ $(readlink -e /run/current-system) == "$TX_NEW_SYSTEM" ]] || fail 'active system mismatch after switch'
   [[ $(readlink -e /nix/var/nix/profiles/system) == "$TX_NEW_SYSTEM" ]] ||
     fail 'persistent system mismatch after switch'
@@ -52,7 +52,7 @@ complete_deploy() {
   local expected_commit=$1 expected_system=$2
   expect_deploy "$expected_commit" "$expected_system"
   sudo -n true || fail 'passwordless sudo is unavailable'
-  wait_for_health || fail 'deployed system is unhealthy on the fresh SSH connection'
+  wait_for_health cluster-hello || fail 'deployed system is unhealthy on the fresh SSH connection'
   [[ $(readlink -e /run/current-system) == "$TX_NEW_SYSTEM" ]] || fail 'active system mismatch'
   [[ $(readlink -e /nix/var/nix/profiles/system) == "$TX_NEW_SYSTEM" ]] ||
     fail 'persistent system mismatch'
