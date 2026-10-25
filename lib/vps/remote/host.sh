@@ -34,7 +34,7 @@ capture_diagnostics() {
 }
 
 health_once() {
-  local check_cluster_hello=${1:-} pds_health appview_status unit
+  local check_deployment=${1:-} pds_health appview_status unit
   for unit in caddy headscale mosimo-pds mosimo-bsaf mosimo-bsaf-publisher podman-happyview; do
     systemctl is-active --quiet "$unit.service" || return 1
   done
@@ -51,21 +51,29 @@ health_once() {
   [[ $appview_status == 303 ]] || return 1
   curl --fail --silent --show-error --output /dev/null \
     --connect-timeout 3 --max-time 5 https://mosimo.oriom.dev/ || return 1
-  if [[ $check_cluster_hello == cluster-hello ]]; then
-    systemctl is-active --quiet podman-cluster-hello.service || return 1
+  if [[ $check_deployment == deployment ]]; then
+    for unit in podman-cluster-hello podman-jpost-api; do
+      systemctl is-active --quiet "$unit.service" || return 1
+    done
     curl --fail --silent --show-error \
       --connect-timeout 3 --max-time 5 http://127.0.0.1:3001/ |
       grep -Fxq 'hello from kagoya-vps' || return 1
     curl --fail --silent --show-error \
       --connect-timeout 3 --max-time 5 https://hello.oriom.dev/ |
       grep -Fxq 'hello from kagoya-vps' || return 1
+    curl --fail --silent --show-error \
+      --connect-timeout 3 --max-time 5 http://127.0.0.1:3002/health |
+      grep -Fxq 'OK' || return 1
+    curl --fail --silent --show-error \
+      --connect-timeout 3 --max-time 5 https://jpost.oriom.dev/health |
+      grep -Fxq 'OK' || return 1
   fi
 }
 
 wait_for_health() {
-  local check_cluster_hello=${1:-} attempts=6
+  local check_deployment=${1:-} attempts=6
   while (( attempts > 0 )); do
-    if health_once "$check_cluster_hello"; then
+    if health_once "$check_deployment"; then
       note 'health checks passed'
       return 0
     fi

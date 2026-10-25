@@ -1,43 +1,37 @@
-{ config, pkgs, lib, ... }:
+{ config, lib, ... }:
 let
-  helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
-  appName = "jpost-api";
+  image = "localhost/jpost-api:${builtins.hashFile "sha256" ./Containerfile}";
 in
 {
-  sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
-  podman.activeServices = [ "${appName}-tailscale" "${appName}-build" appName ];
+  sops.secrets.jpost-api_env = {
+    sopsFile = ./secrets.yaml;
+    format = "yaml";
+    restartUnits = [ "podman-jpost-api.service" ];
+  };
 
-  home.file = 
-    helper.mkQuadlet {
-      name = "${appName}-tailscale";
-      templatePath = ../../templates/http/tailscale.container.in;
-      vars = {
-        "@APP_NAME@" = appName;
-        "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
-        "@TS_LOGIN_SERVER@" = config.podman.tailscaleLoginServer;
-      };
-    } // 
-    helper.mkQuadlet {
-      name = appName;
-      type = "build";
-      templatePath = ./jpost-api.build;
-    } // 
-    helper.mkQuadlet {
-      name = appName;
-      templatePath = ./jpost-api.container.in;
-      vars = {
-        "@SECRETS_PATH@" = config.sops.secrets."${appName}_env".path;
-      };
-    } // 
-    {
-      ".config/containers/build/${appName}/Containerfile".source = ./Containerfile;
-    };
+  virtualisation.oci-containers.containers.jpost-api = {
+    inherit image;
+    pull = "never";
+    environmentFiles = [ config.sops.secrets.jpost-api_env.path ];
+    ports = [ "127.0.0.1:3002:8080" ];
+    extraOptions = [
+      "--init"
+      "--cap-drop=ALL"
+      "--security-opt=no-new-privileges"
+      "--pids-limit=128"
+      "--memory=192m"
+      "--cpus=0.5"
+      "--log-driver=journald"
+    ];
+  };
 
-  home.activation."copy_${appName}_src" = lib.hm.dag.entryAfter ["linkGeneration"] ''
-    BUILD_DIR="$HOME/.config/containers/build/${appName}/src"
-    rm -rf "$BUILD_DIR"
-    mkdir -p "$BUILD_DIR"
-    cp -rL ${./src}/* "$BUILD_DIR"/
-    chmod -R u+w "$BUILD_DIR"
+  systemd.services.podman-jpost-api.preStart = ''
+    ${config.virtualisation.podman.package}/bin/podman build \
+      --tag ${lib.escapeShellArg image} \
+      --file ${./Containerfile} ${./.}
+  '';
+
+  services.caddy.virtualHosts."jpost.oriom.dev".extraConfig = ''
+    reverse_proxy 127.0.0.1:3002
   '';
 }

@@ -6,6 +6,7 @@
     ../../containers/headscale
     ../../containers/caddy
     ../../containers/cluster-hello
+    ../../containers/jpost-api
     ../../containers/omni-tcp-probe
     ../../containers/mosimo
   ];

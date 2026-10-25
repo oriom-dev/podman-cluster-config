@@ -137,7 +137,7 @@ copy_system() {
 }
 
 external_health() {
-  local pds_health appview_status
+  local check_deployment=${1:-} pds_health appview_status
   pds_health=$(curl --fail --silent --show-error \
     --connect-timeout 5 --max-time 20 https://pds.oriom.dev/health) ||
     fail 'external PDS health check failed'
@@ -154,8 +154,13 @@ external_health() {
   curl --fail --silent --show-error --output /dev/null \
     --connect-timeout 5 --max-time 20 https://mosimo.oriom.dev/ ||
     fail 'external Mosimo web check failed'
-  curl --fail --silent --show-error \
-    --connect-timeout 5 --max-time 20 https://hello.oriom.dev/ |
-    grep -Fxq 'hello from kagoya-vps' || fail 'external cluster hello check failed'
+  if [[ $check_deployment == deployment ]]; then
+    curl --fail --silent --show-error \
+      --connect-timeout 5 --max-time 20 https://hello.oriom.dev/ |
+      grep -Fxq 'hello from kagoya-vps' || fail 'external cluster hello check failed'
+    curl --fail --silent --show-error \
+      --connect-timeout 5 --max-time 20 https://jpost.oriom.dev/health |
+      grep -Fxq 'OK' || fail 'external JPost health check failed'
+  fi
   note 'external health checks passed'
 }

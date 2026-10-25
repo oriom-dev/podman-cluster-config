@@ -3,7 +3,6 @@ FROM docker.io/library/node:26.12.1-alpine@sha256:40cd011b55415bc894e45b02fdd5a5
 WORKDIR /app
 
 COPY src/ ./
-RUN ls -la
 RUN npm ci
 RUN npm run build
 
@@ -16,5 +15,6 @@ COPY --from=builder /app/package-lock.json ./
 RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 
+USER node
 EXPOSE 8080
 CMD ["npm", "start"]

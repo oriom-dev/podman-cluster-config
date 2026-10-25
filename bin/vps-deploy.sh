@@ -39,9 +39,9 @@ trap cleanup EXIT
 trap 'exit 130' HUP INT TERM
 
 run_remote deploy.sh test "$commit" "$system_path"
-external_health
+external_health deployment
 run_remote deploy.sh switch "$commit" "$system_path"
-external_health
+external_health deployment
 run_remote deploy.sh complete "$commit" "$system_path"
 
 transaction_active=0
