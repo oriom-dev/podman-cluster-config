@@ -22,12 +22,23 @@
   outputs = inputs@{ nixpkgs, disko, nixos-wsl, sops-nix, ... }:
     let
       system = "x86_64-linux";
+      packageOverrides = {
+        nodejs_24 = import ./package-overrides/nodejs_24.nix { inherit system; };
+      };
       mkHost = modules: nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit inputs; };
-        modules = modules;
+        specialArgs = { inherit inputs packageOverrides; };
+        modules = modules ++ [{
+          system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
+        }];
       };
+      pkgs = nixpkgs.legacyPackages.${system};
     in {
+      packages.${system}.vps = pkgs.buildEnv {
+        name = "oriom-vps-cli";
+        paths = with pkgs; [ bash coreutils curl git gnugrep nix openssh util-linux ];
+      };
+
       nixosConfigurations = {
         kagoya-vps = mkHost [
           disko.nixosModules.disko

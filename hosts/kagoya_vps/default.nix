@@ -1,4 +1,4 @@
-{ config, inputs, ... }:
+{ config, inputs, lib, packageOverrides, pkgs, ... }:
 {
   imports = [
     ../common
@@ -11,6 +11,16 @@
     (inputs.mosimo + "/appview/bsaf")
     (inputs.mosimo + "/apps/web")
   ];
+
+  nixpkgs.overlays = [
+    (_final: _prev: {
+      nodejs_24 = packageOverrides.nodejs_24.package;
+    })
+  ];
+  assertions = [{
+    assertion = lib.versionAtLeast pkgs.nodejs_24.version packageOverrides.nodejs_24.requiredVersion;
+    message = "kagoya-vps requires Node.js >= ${packageOverrides.nodejs_24.requiredVersion} for CVE-2026-111497";
+  }];
 
   sops.age.keyFile = "/var/lib/sops-nix/key.txt";
   sops.secrets = {
@@ -105,8 +115,9 @@
     isNormalUser = true;
     extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN/h11zIoUgksb0ETTk8aTeo5Ehcmv8uw349rACSIbUO"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB4uhy8T5GnGe+G53esadrdShscQvJruH+Gwa53WxCEm"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN/h11zIoUgksb0ETTk8aTeo5Ehcmv8uw349rACSIbUO dell2"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB4uhy8T5GnGe+G53esadrdShscQvJruH+Gwa53WxCEm desktop1"
+      "restrict ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB/lEksFJK7AcZQMKRi2sYcQiPPs0puCe8o9cBXrxZnt desktop1 wsl-ubuntu"
     ];
   };
   users.users.yoyochinese = {
