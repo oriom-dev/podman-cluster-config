@@ -154,5 +154,8 @@ external_health() {
   curl --fail --silent --show-error --output /dev/null \
     --connect-timeout 5 --max-time 20 https://mosimo.oriom.dev/ ||
     fail 'external Mosimo web check failed'
+  curl --fail --silent --show-error \
+    --connect-timeout 5 --max-time 20 https://hello.oriom.dev/ |
+    grep -Fxq 'hello from kagoya-vps' || fail 'external cluster hello check failed'
   note 'external health checks passed'
 }

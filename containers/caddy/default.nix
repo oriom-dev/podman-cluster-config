@@ -7,7 +7,7 @@
         reverse_proxy 127.0.0.1:8080
       '';
       "hello.oriom.dev".extraConfig = ''
-        respond "hello from kagoya-vps" 200
+        reverse_proxy 127.0.0.1:3001
       '';
     };
   };

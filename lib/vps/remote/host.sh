@@ -35,7 +35,7 @@ capture_diagnostics() {
 
 health_once() {
   local pds_health appview_status unit
-  for unit in caddy headscale mosimo-pds mosimo-bsaf mosimo-bsaf-publisher podman-happyview; do
+  for unit in caddy headscale mosimo-pds mosimo-bsaf mosimo-bsaf-publisher podman-cluster-hello podman-happyview; do
     systemctl is-active --quiet "$unit.service" || return 1
   done
   [[ -z $(systemctl --failed --no-legend --plain) ]] || return 1
@@ -51,6 +51,12 @@ health_once() {
   [[ $appview_status == 303 ]] || return 1
   curl --fail --silent --show-error --output /dev/null \
     --connect-timeout 3 --max-time 5 https://mosimo.oriom.dev/ || return 1
+  curl --fail --silent --show-error \
+    --connect-timeout 3 --max-time 5 http://127.0.0.1:3001/ |
+    grep -Fxq 'hello from kagoya-vps' || return 1
+  curl --fail --silent --show-error \
+    --connect-timeout 3 --max-time 5 https://hello.oriom.dev/ |
+    grep -Fxq 'hello from kagoya-vps' || return 1
 }
 
 wait_for_health() {
