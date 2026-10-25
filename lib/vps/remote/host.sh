@@ -147,7 +147,11 @@ read_transaction() {
 
 cancel_watchdog() {
   local watchdog=$1
-  sudo -n systemctl stop "$watchdog.timer" "$watchdog.service" || return 1
+  sudo -n systemctl stop "$watchdog.timer" "$watchdog.service" >/dev/null 2>&1 || true
+  if sudo -n systemctl is-active --quiet "$watchdog.timer" ||
+    sudo -n systemctl is-active --quiet "$watchdog.service"; then
+    return 1
+  fi
   sudo -n systemctl reset-failed "$watchdog.timer" "$watchdog.service" >/dev/null 2>&1 || true
 }
 
