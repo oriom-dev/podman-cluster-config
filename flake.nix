@@ -13,10 +13,6 @@
       url = "github:jphacks/sd_2607/main";
       flake = false;
     };
-    happyview = {
-      url = "github:jphacks/sd_2607/main";
-      flake = false;
-    };
   };
 
   outputs = inputs@{ nixpkgs, disko, nixos-wsl, sops-nix, ... }:

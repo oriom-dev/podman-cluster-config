@@ -12,42 +12,4 @@ Do not publish application ports on the VPS. Caddy is the sole public web entry 
 
 Temporary exception: `omni-tcp-probe` exposes only 9682/TCP for a receive-only cellular connectivity investigation. It is not a web service. See its README for capture limits and removal instructions; remove its host import after the investigation.
 
-## Containers from another public repository
-
-Add the public monorepo as a non-flake input in `flake.nix`. `flake.lock` pins the resolved revision, so deployment does not follow an unreviewed branch update.
-
-```nix
-inputs.external-services = {
-  url = "github:OWNER/REPOSITORY";
-  flake = false;
-};
-```
-
-An external service directory needs a `default.nix` NixOS module. Relative paths, such as `./Containerfile`, are resolved within that directory.
-
-```nix
-# containers/hello-world/default.nix in OWNER/REPOSITORY
-{ ... }:
-{
-  virtualisation.oci-containers.containers.hello-world = {
-    image = "docker.io/hashicorp/http-echo:1.0";
-    cmd = [ "-listen=:5678" "-text=hello" ];
-    ports = [ "127.0.0.1:3000:5678" ];
-  };
-}
-```
-
-Import one external directory in the target host, then keep the host-specific firewall, Headscale ACL, and public Caddy route in this repository:
-
-```nix
-# hosts/kagoya_vps/default.nix
-{ inputs, ... }:
-{
-  imports = [
-    # existing imports...
-    (inputs.external-services + "/containers/hello-world")
-  ];
-}
-```
-
-After changing the input, run `nix flake lock --update-input external-services`, review `flake.lock`, and build the affected host before deployment.
+External implementations are also exposed through a local `containers/<name>/default.nix`. The local module owns deployment-specific domains, secrets, and routes, so hosts never import paths from an external repository directly.

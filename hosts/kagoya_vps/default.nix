@@ -1,4 +1,4 @@
-{ config, inputs, lib, packageOverrides, pkgs, ... }:
+{ ... }:
 {
   imports = [
     ../common
@@ -6,81 +6,7 @@
     ../../containers/headscale
     ../../containers/caddy
     ../../containers/omni-tcp-probe
-    (inputs.happyview + "/appview/happyview")
-    (inputs.mosimo + "/pds")
-    (inputs.mosimo + "/appview/bsaf")
-    (inputs.mosimo + "/apps/web")
-  ];
-
-  nixpkgs.overlays = [
-    (_final: _prev: {
-      nodejs_24 = packageOverrides.nodejs_24.package;
-    })
-  ];
-  assertions = [{
-    assertion = lib.versionAtLeast pkgs.nodejs_24.version packageOverrides.nodejs_24.requiredVersion;
-    message = "kagoya-vps requires Node.js >= ${packageOverrides.nodejs_24.requiredVersion} for CVE-2026-111497";
-  }];
-
-  sops.age.keyFile = "/var/lib/sops-nix/key.txt";
-  sops.secrets = {
-    happyview_session_secret = {
-      sopsFile = ../../containers/happyview/secrets.yaml;
-      format = "yaml";
-    };
-    happyview_token_encryption_key = {
-      sopsFile = ../../containers/happyview/secrets.yaml;
-      format = "yaml";
-    };
-  };
-  sops.templates."happyview.env".content = ''
-    SESSION_SECRET=${config.sops.placeholder.happyview_session_secret}
-    TOKEN_ENCRYPTION_KEY=${config.sops.placeholder.happyview_token_encryption_key}
-  '';
-
-  services.happyview = {
-    enable = true;
-    publicUrl = "https://appview.oriom.dev";
-    environmentFile = config.sops.templates."happyview.env".path;
-  };
-
-  services.mosimo-web = {
-    enable = true;
-    domain = "mosimo.oriom.dev";
-  };
-
-  services.mosimo-bsaf = {
-    enable = true;
-    # jma-alert-bot.bsky.social (unofficial); handle and PLC document checked 2026-10-18.
-    authors = [
-      "did:plc:vwi7zhfyamyvrg5v6ycjgzxi"
-      "did:plc:kxwz5cz7o6g4jlmxh6doyfsm"
-    ];
-    publisher = {
-      enable = true;
-      selectJmaDefaults = true;
-      selectKikikuruDefaults = true;
-      credentialsFile = "/var/lib/mosimo-importer/credentials.json";
-      trustFile = "/var/lib/mosimo-importer/roots.json";
-      relayUrl = "wss://pds.oriom.dev";
-    };
-  };
-
-  services.mosimo-pds = {
-    enable = true;
-    settings = {
-      groups = [
-        { id = "oriom"; endpoint = "https://pds.oriom.dev"; }
-      ];
-      relays = [ "wss://relay.damus.io" ];
-      publicInformation = (builtins.fromJSON
-        (builtins.readFile ./mosimo-public-information.json)).publicInformation;
-    };
-  };
-
-  systemd.tmpfiles.rules = [
-    "d /var/lib/mosimo-importer 0700 root root -"
-    "d /var/lib/mosimo-trust 0750 root caddy -"
+    ../../containers/mosimo
   ];
 
   networking = {
