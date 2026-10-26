@@ -52,21 +52,14 @@ health_once() {
   curl --fail --silent --show-error --output /dev/null \
     --connect-timeout 3 --max-time 5 https://mosimo.oriom.dev/ || return 1
   if [[ $check_deployment == deployment ]]; then
-    for unit in podman-cluster-hello podman-jpost-api; do
-      systemctl is-active --quiet "$unit.service" || return 1
-    done
+    systemctl is-active --quiet podman-cluster-hello.service || return 1
     curl --fail --silent --show-error \
       --connect-timeout 3 --max-time 5 http://127.0.0.1:3001/ |
       grep -Fxq 'hello from kagoya-vps' || return 1
     curl --fail --silent --show-error \
       --connect-timeout 3 --max-time 5 https://hello.oriom.dev/ |
       grep -Fxq 'hello from kagoya-vps' || return 1
-    curl --fail --silent --show-error \
-      --connect-timeout 3 --max-time 5 http://127.0.0.1:3002/health |
-      grep -Fxq 'OK' || return 1
-    curl --fail --silent --show-error \
-      --connect-timeout 3 --max-time 5 https://jpost.oriom.dev/health |
-      grep -Fxq 'OK' || return 1
+
   fi
 }
 

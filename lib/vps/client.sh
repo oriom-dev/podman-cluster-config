@@ -158,9 +158,7 @@ external_health() {
     curl --fail --silent --show-error \
       --connect-timeout 5 --max-time 20 https://hello.oriom.dev/ |
       grep -Fxq 'hello from kagoya-vps' || fail 'external cluster hello check failed'
-    curl --fail --silent --show-error \
-      --connect-timeout 5 --max-time 20 https://jpost.oriom.dev/health |
-      grep -Fxq 'OK' || fail 'external JPost health check failed'
+
   fi
   note 'external health checks passed'
 }

@@ -7,6 +7,7 @@
     ../../containers/caddy
     ../../containers/cluster-hello
     ../../containers/jpost-api
+    ../../containers/mc-whitelist-auth
     ../../containers/omni-tcp-probe
     ../../containers/mosimo
   ];

@@ -1,44 +1,57 @@
-{ config, pkgs, lib, ... }:
-
+{ config, lib, ... }:
 let
-  helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
-  appName = "mc-whitelist-auth";
+  cfg = config.services.mc-whitelist-auth;
+  image = "localhost/mc-whitelist-auth:${builtins.hashFile "sha256" ./Containerfile}";
 in
 {
-  sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
-  podman.activeServices = [ "${appName}-build" appName "${appName}-tailscale" ];
+  imports = [ ../mc-whitelist-db ];
 
-  home.file =
-    helper.mkQuadlet {
-      name = "${appName}-tailscale";
-      templatePath = ../../templates/http/tailscale.container.in;
-      vars = {
-        "@APP_NAME@" = appName;
-        "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
-        "@TS_LOGIN_SERVER@" = config.podman.tailscaleLoginServer;
-      };
-    } // 
-    helper.mkQuadlet {
-      name = appName;
-      type = "build";
-      templatePath = ./${appName}.build;
-    } //
-    helper.mkQuadlet {
-      name = appName;
-      templatePath = ./${appName}.container.in;
-      vars = {
-        "@SECRETS_PATH@" = config.sops.secrets."${appName}_env".path;
-      };
-    } //
-    {
-      ".config/containers/build/${appName}/Containerfile".source = ./Containerfile;
+  options.services.mc-whitelist-auth.enable = lib.mkEnableOption "Minecraft whitelist authentication";
+
+  config = lib.mkIf cfg.enable {
+    services.mc-whitelist-db.enable = true;
+
+    sops.secrets.mc-whitelist-auth_env = {
+      sopsFile = ./secrets.yaml;
+      format = "yaml";
+      restartUnits = [ "podman-mc-whitelist-auth.service" ];
     };
 
-  home.activation."copy_${appName}_src" = lib.hm.dag.entryAfter ["linkGeneration"] ''
-    BUILD_DIR="$HOME/.config/containers/build/${appName}/src"
-    rm -rf "$BUILD_DIR"
-    mkdir -p "$BUILD_DIR"
-    cp -rL ${./src}/* "$BUILD_DIR"/
-    chmod -R u+w "$BUILD_DIR"
-  '';
+    virtualisation.oci-containers.containers.mc-whitelist-auth = {
+      inherit image;
+      pull = "never";
+      dependsOn = [ "mc-whitelist-db" ];
+      environment = {
+        PORT = "3000";
+        PUBLIC_BASE_URL = "https://mc.oriom.dev";
+        BETTER_AUTH_URL = "https://mc.oriom.dev";
+      };
+      environmentFiles = [ config.sops.secrets.mc-whitelist-auth_env.path ];
+      ports = [ "127.0.0.1:3003:3000" ];
+      extraOptions = [
+        "--init"
+        "--network=mc-whitelist"
+        "--network-alias=mc-whitelist-auth.ts.home.arpa"
+        "--cap-drop=ALL"
+        "--security-opt=no-new-privileges"
+        "--pids-limit=192"
+        "--memory=384m"
+        "--cpus=0.75"
+        "--log-driver=journald"
+      ];
+    };
+
+    systemd.services.podman-mc-whitelist-auth.preStart = ''
+      ${config.virtualisation.podman.package}/bin/podman build \
+        --tag ${lib.escapeShellArg image} \
+        --file ${./Containerfile} ${./.}
+    '';
+
+    services.caddy.virtualHosts."mc.oriom.dev".extraConfig = ''
+      @internal_api path /api/v1/*
+      respond @internal_api "Forbidden" 403
+
+      reverse_proxy 127.0.0.1:3003
+    '';
+  };
 }

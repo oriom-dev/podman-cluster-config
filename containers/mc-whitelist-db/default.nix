@@ -1,34 +1,54 @@
-{ config, pkgs, lib, ... }:
-
+{ config, lib, ... }:
 let
-  helper = import ../../lib/quadlet-helper.nix { inherit config pkgs lib; };
-  appName = "mc-whitelist-db";
+  cfg = config.services.mc-whitelist-db;
+  podman = config.virtualisation.podman.package;
 in
 {
-  sops.secrets."${appName}_env" = { sopsFile = ./secrets.yaml; format = "yaml"; };
-  podman.activeServices = [ "${appName}-tailscale" appName ];
+  options.services.mc-whitelist-db.enable = lib.mkEnableOption "Minecraft whitelist CockroachDB";
 
-  home.file =
-    helper.mkQuadlet {
-      name = "${appName}-tailscale";
-      templatePath = ../../templates/http/tailscale.container.in;
-      vars = {
-        "@APP_NAME@" = appName;
-        "@TS_SECRET_PATH@" = config.podman.tailscaleAuthKeyPath;
-        "@TS_LOGIN_SERVER@" = config.podman.tailscaleLoginServer;
-      };
-    } //
-    helper.mkQuadlet {
-      name = appName;
-      templatePath = ./mc-whitelist-db.container;
-      vars = {
-        "@SECRETS_PATH@" = config.sops.secrets."${appName}_env".path;
-      };
-    } //
-    {
-      ".config/containers/mc-whitelist-db/entrypoint.sh" = {
-        source = ./entrypoint.sh;
-        executable = true;
-      };
+  config = lib.mkIf cfg.enable {
+    sops.secrets.mc-whitelist-db_env = {
+      sopsFile = ./secrets.yaml;
+      format = "yaml";
+      restartUnits = [ "podman-mc-whitelist-db.service" ];
     };
+
+    systemd.services.podman-mc-whitelist-network = {
+      description = "Podman network for Minecraft whitelist services";
+      before = [ "podman-mc-whitelist-db.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      script = ''
+        ${podman}/bin/podman network exists mc-whitelist ||
+          ${podman}/bin/podman network create mc-whitelist
+      '';
+    };
+
+    virtualisation.oci-containers.containers.mc-whitelist-db = {
+      image = "docker.io/cockroachdb/cockroach:v25.3.3@sha256:e6ba3582ae70f1da0cc28cbf82d2b180d307a492176f33df332983274230f643";
+      environmentFiles = [ config.sops.secrets.mc-whitelist-db_env.path ];
+      entrypoint = "/bin/sh";
+      cmd = [ "/entrypoint.sh" ];
+      volumes = [
+        "${./entrypoint.sh}:/entrypoint.sh:ro"
+        "mc-whitelist-db-data:/cockroach/cockroach-data"
+      ];
+      extraOptions = [
+        "--network=mc-whitelist"
+        "--network-alias=mc-whitelist-db.ts.home.arpa"
+        "--security-opt=no-new-privileges"
+        "--pids-limit=512"
+        "--memory=768m"
+        "--cpus=1"
+        "--log-driver=journald"
+      ];
+    };
+
+    systemd.services.podman-mc-whitelist-db = {
+      requires = [ "podman-mc-whitelist-network.service" ];
+      after = [ "podman-mc-whitelist-network.service" ];
+    };
+  };
 }
