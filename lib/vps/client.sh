@@ -72,7 +72,7 @@ confirm_action() {
 
 live_main_commit() {
   local line
-  line=$(git ls-remote --exit-code \
+  line=$(git -C "$REPO_ROOT" ls-remote --exit-code \
     https://github.com/oriom-dev/podman-cluster-config.git refs/heads/main) ||
     fail 'failed to resolve GitHub main'
   [[ -n $line ]] || fail 'GitHub main did not resolve to a commit'
