@@ -32,7 +32,7 @@
     in {
       packages.${system}.vps = pkgs.buildEnv {
         name = "oriom-vps-cli";
-        paths = with pkgs; [ bash coreutils curl git gnugrep nix openssh util-linux ];
+        paths = with pkgs; [ age bash coreutils curl git gnugrep nix openssh sops util-linux ];
       };
 
       nixosConfigurations = {

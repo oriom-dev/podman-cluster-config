@@ -14,6 +14,7 @@ in
     sops.secrets.mc-whitelist-auth_env = {
       sopsFile = ./secrets.yaml;
       format = "yaml";
+      mode = "0400";
       restartUnits = [ "podman-mc-whitelist-auth.service" ];
     };
 

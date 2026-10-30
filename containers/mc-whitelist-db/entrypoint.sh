@@ -12,10 +12,10 @@ HTTP_ADDR="${HTTP_ADDR:-127.0.0.1:8080}"
 SQL_PORT="${SQL_ADDR##*:}"
 SQL_BOOTSTRAP_ADDR="${SQL_BOOTSTRAP_ADDR:-127.0.0.1:${SQL_PORT}}"
 ADVERTISE_SQL_ADDR="${ADVERTISE_SQL_ADDR:-${DB_HOSTNAME}:${SQL_PORT}}"
-BOOTSTRAP_MARKER="${DATA_DIR}/.app-user-ready"
+
 BOOTSTRAP_LOG="${DATA_DIR}/bootstrap-start.log"
 
-echo "[mc-whitelist-db] entrypoint version 2026-04-20.2" >&2
+echo "[mc-whitelist-db] entrypoint version 2026-10-30.1" >&2
 
 mkdir -p "$CERTS_DIR" "$DATA_DIR"
 
@@ -33,14 +33,13 @@ ensure_certs() {
 }
 
 start_node() {
-  cockroach start-single-node \
+  exec cockroach start-single-node \
     --certs-dir="$CERTS_DIR" \
     --listen-addr="$LISTEN_ADDR" \
     --sql-addr="$SQL_ADDR" \
     --advertise-sql-addr="$ADVERTISE_SQL_ADDR" \
     --http-addr="$HTTP_ADDR" \
-    --store="$DATA_DIR" \
-    "$@"
+    --store="$DATA_DIR"
 }
 
 wait_for_sql() {
@@ -85,22 +84,19 @@ bootstrap_app_user() {
 
 ensure_certs
 
-if [ ! -f "$BOOTSTRAP_MARKER" ]; then
-  rm -f "$BOOTSTRAP_LOG"
-  start_node >"$BOOTSTRAP_LOG" 2>&1 &
-  bootstrap_pid=$!
+rm -f "$BOOTSTRAP_LOG"
+start_node >"$BOOTSTRAP_LOG" 2>&1 &
+bootstrap_pid=$!
 
-  wait_for_sql "$bootstrap_pid"
-  bootstrap_app_user
+wait_for_sql "$bootstrap_pid"
+bootstrap_app_user
 
-  if ! cockroach quit --certs-dir="$CERTS_DIR" --host="$SQL_BOOTSTRAP_ADDR" >/dev/null 2>&1; then
-    # Cockroach v25 image may not provide the legacy `quit` command.
-    kill "$bootstrap_pid" >/dev/null 2>&1 || true
-  fi
-
-  wait "$bootstrap_pid" || true
-  touch "$BOOTSTRAP_MARKER"
+if ! cockroach quit --certs-dir="$CERTS_DIR" --host="$SQL_BOOTSTRAP_ADDR" >/dev/null 2>&1; then
+  # Cockroach v25 image may not provide the legacy `quit` command.
+  kill "$bootstrap_pid" >/dev/null 2>&1 || true
 fi
+
+wait "$bootstrap_pid" || true
 
 exec cockroach start-single-node \
   --certs-dir="$CERTS_DIR" \

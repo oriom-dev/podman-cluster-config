@@ -10,6 +10,7 @@ in
     sops.secrets.jpost-api_env = {
       sopsFile = ./secrets.yaml;
       format = "yaml";
+      mode = "0400";
       restartUnits = [ "podman-jpost-api.service" ];
     };
 

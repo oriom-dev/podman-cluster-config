@@ -10,6 +10,7 @@ in
     sops.secrets.mc-whitelist-db_env = {
       sopsFile = ./secrets.yaml;
       format = "yaml";
+      mode = "0400";
       restartUnits = [ "podman-mc-whitelist-db.service" ];
     };
 

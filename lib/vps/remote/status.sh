@@ -16,5 +16,6 @@ printf 'remote_commit=%s\nremote_tree=%s\nactive_system=%s\npersistent_system=%s
   "$(readlink -e /run/current-system)" "$(readlink -e /nix/var/nix/profiles/system)" \
   "$rollback_system" "$transaction"
 nixos-version --json
-systemctl show mosimo-pds mosimo-bsaf mosimo-bsaf-publisher podman-cluster-hello \
+systemctl show mosimo-pds mosimo-bsaf mosimo-bsaf-publisher \
+  podman-cluster-hello podman-jpost-api podman-mc-whitelist-db podman-mc-whitelist-auth \
   --property=Id,ActiveState,SubState,NRestarts,ExecStart

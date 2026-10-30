@@ -8,10 +8,9 @@
   },
   "dependencies": {
     "@better-auth/kysely-adapter": "^1.6.5",
-    "@hono/node-server": "^1.19.14",
+    "@hono/node-server": "^2.1.5",
     "better-auth": "^1.6.5",
     "hono": "^4.12.14",
-    "honox": "^0.1.55",
     "jose": "^6.2.2",
     "kysely": "^0.28.16",
     "pg": "^8.20.0",
@@ -22,6 +21,7 @@
     "@hono/vite-dev-server": "^0.25.1",
     "@types/node": "^25.6.0",
     "@types/pg": "^8.15.6",
+    "honox": "^0.1.55",
     "typescript": "^6.0.3",
     "vite": "^8.0.8"
   }

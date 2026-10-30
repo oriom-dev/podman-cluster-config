@@ -33,8 +33,12 @@ capture_diagnostics() {
   sudo -n journalctl -b --priority=warning --no-pager --lines=100 >&2 || true
 }
 
+unit_exists() {
+  systemctl cat "$1.service" >/dev/null 2>&1
+}
+
 health_once() {
-  local check_deployment=${1:-} pds_health appview_status unit
+  local check_deployment=${1:-} pds_health appview_status mc_internal_status unit
   for unit in caddy headscale mosimo-pds mosimo-bsaf mosimo-bsaf-publisher podman-happyview; do
     systemctl is-active --quiet "$unit.service" || return 1
   done
@@ -51,7 +55,7 @@ health_once() {
   [[ $appview_status == 303 ]] || return 1
   curl --fail --silent --show-error --output /dev/null \
     --connect-timeout 3 --max-time 5 https://mosimo.oriom.dev/ || return 1
-  if [[ $check_deployment == deployment ]]; then
+  if [[ $check_deployment == deployment ]] || unit_exists podman-cluster-hello; then
     systemctl is-active --quiet podman-cluster-hello.service || return 1
     curl --fail --silent --show-error \
       --connect-timeout 3 --max-time 5 http://127.0.0.1:3001/ |
@@ -59,12 +63,35 @@ health_once() {
     curl --fail --silent --show-error \
       --connect-timeout 3 --max-time 5 https://hello.oriom.dev/ |
       grep -Fxq 'hello from kagoya-vps' || return 1
-
+  fi
+  if [[ $check_deployment == deployment ]] || unit_exists podman-jpost-api; then
+    systemctl is-active --quiet podman-jpost-api.service || return 1
+    curl --fail --silent --show-error \
+      --connect-timeout 3 --max-time 5 http://127.0.0.1:3002/health |
+      grep -Fxq 'OK' || return 1
+    curl --fail --silent --show-error \
+      --connect-timeout 3 --max-time 5 https://jpost.oriom.dev/health |
+      grep -Fxq 'OK' || return 1
+  fi
+  if [[ $check_deployment == deployment ]] || unit_exists podman-mc-whitelist-auth; then
+    for unit in podman-mc-whitelist-db podman-mc-whitelist-auth; do
+      systemctl is-active --quiet "$unit.service" || return 1
+    done
+    curl --fail --silent --show-error \
+      --connect-timeout 3 --max-time 5 http://127.0.0.1:3003/health |
+      grep -Fxq 'OK' || return 1
+    curl --fail --silent --show-error \
+      --connect-timeout 3 --max-time 5 https://mc.oriom.dev/health |
+      grep -Fxq 'OK' || return 1
+    mc_internal_status=$(curl --silent --show-error --output /dev/null \
+      --write-out '%{http_code}' --connect-timeout 3 --max-time 5 \
+      https://mc.oriom.dev/api/v1/authorize) || return 1
+    [[ $mc_internal_status == 403 ]] || return 1
   fi
 }
 
 wait_for_health() {
-  local check_deployment=${1:-} attempts=6
+  local check_deployment=${1:-} attempts=60
   while (( attempts > 0 )); do
     if health_once "$check_deployment"; then
       note 'health checks passed'

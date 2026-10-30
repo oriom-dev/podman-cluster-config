@@ -1,0 +1,13 @@
+keys:
+  - &operator age1gxmad0d6e3z8jj0ua83ncquc34uyf7vnv74zl2h5npd8ye98fd4ss5xrjq
+  - &kagoya_vps age1dk23lpu33mvtulcuc8lpnxuuxdxy0ctnsq5aqjvcrwy7cgefdfrsrf89na
+creation_rules:
+  - path_regex: (jpost-api|mc-whitelist-auth|mc-whitelist-db)/secrets\.yaml$
+    key_groups:
+      - age:
+          - *operator
+          - *kagoya_vps
+  - path_regex: mc-velocity/secrets\.yaml$
+    key_groups:
+      - age:
+          - *operator

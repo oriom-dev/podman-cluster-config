@@ -12,6 +12,9 @@
     ../../containers/mosimo
   ];
 
+  services.jpost-api.enable = true;
+  services.mc-whitelist-auth.enable = true;
+
   networking = {
     hostName = "kagoya-vps";
     useDHCP = false;

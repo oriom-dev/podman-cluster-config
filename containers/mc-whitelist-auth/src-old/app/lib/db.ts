@@ -155,6 +155,10 @@ const pool = new Pool({
   max: 5
 });
 
+pool.on('error', (error) => {
+  console.error('[mc-whitelist-auth] Idle database client failed', error);
+});
+
 export const db = new Kysely<Database>({
   dialect: new PostgresDialect({ pool })
 });
@@ -383,6 +387,11 @@ export const ensureSchema = async (): Promise<void> => {
   });
 
   return schemaPromise;
+};
+
+export const checkDatabase = async (): Promise<void> => {
+  await ensureSchema();
+  await pool.query('SELECT 1');
 };
 
 export type DomainGrant = {

@@ -137,7 +137,7 @@ copy_system() {
 }
 
 external_health() {
-  local check_deployment=${1:-} pds_health appview_status
+  local check_deployment=${1:-} pds_health appview_status mc_internal_status
   pds_health=$(curl --fail --silent --show-error \
     --connect-timeout 5 --max-time 20 https://pds.oriom.dev/health) ||
     fail 'external PDS health check failed'
@@ -158,7 +158,17 @@ external_health() {
     curl --fail --silent --show-error \
       --connect-timeout 5 --max-time 20 https://hello.oriom.dev/ |
       grep -Fxq 'hello from kagoya-vps' || fail 'external cluster hello check failed'
-
+    curl --fail --silent --show-error \
+      --connect-timeout 5 --max-time 20 https://jpost.oriom.dev/health |
+      grep -Fxq 'OK' || fail 'external JPost health check failed'
+    curl --fail --silent --show-error \
+      --connect-timeout 5 --max-time 20 https://mc.oriom.dev/health |
+      grep -Fxq 'OK' || fail 'external Minecraft auth health check failed'
+    mc_internal_status=$(curl --silent --show-error --output /dev/null \
+      --write-out '%{http_code}' --connect-timeout 5 --max-time 20 \
+      https://mc.oriom.dev/api/v1/authorize) || fail 'external Minecraft API guard check failed'
+    [[ $mc_internal_status == 403 ]] ||
+      fail "unexpected public Minecraft API status: $mc_internal_status"
   fi
   note 'external health checks passed'
 }
