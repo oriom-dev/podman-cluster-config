@@ -35,6 +35,20 @@
         paths = with pkgs; [ age bash coreutils curl git gnugrep nix openssh sops util-linux ];
       };
 
+      devShells.${system}.default = pkgs.mkShell {
+        packages = with pkgs; [
+          age
+          curl
+          git
+          nil
+          nixos-rebuild
+          openssh
+          podman
+          python3
+          sops
+        ];
+      };
+
       nixosConfigurations = {
         kagoya-vps = mkHost [
           disko.nixosModules.disko

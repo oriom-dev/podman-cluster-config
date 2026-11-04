@@ -1,0 +1,21 @@
+FROM nixos/nix:2.35.4
+
+ENV NIX_CONFIG="experimental-features = nix-command flakes"
+ENV PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin
+
+COPY flake.lock /tmp/flake.lock
+
+RUN nix profile install --impure --expr '\
+    let \
+      lock = builtins.fromJSON (builtins.readFile /tmp/flake.lock); \
+      pkgs = (builtins.getFlake ("github:NixOS/nixpkgs/" + lock.nodes.nixpkgs.locked.rev)).legacyPackages.x86_64-linux; \
+    in pkgs.buildEnv { \
+      name = "devcontainer-direnv"; \
+      paths = [ pkgs.direnv pkgs.nix-direnv ]; \
+    }'
+
+RUN mkdir -p /root/.config/direnv \
+    && printf '%s\n' 'source /root/.nix-profile/share/nix-direnv/direnvrc' > /root/.config/direnv/direnvrc \
+    && printf '\n%s\n' 'eval "$(direnv hook bash)"' >> /root/.bashrc
+
+RUN git config --global --add safe.directory /workspaces/podman-cluster-config

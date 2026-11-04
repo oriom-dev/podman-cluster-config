@@ -1,0 +1,13 @@
+{
+  "name": "VPS Cluster Config",
+  "build": {
+    "dockerfile": "Containerfile",
+    "context": ".."
+  },
+  "remoteUser": "root",
+  "workspaceFolder": "/workspaces/podman-cluster-config",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/podman-cluster-config,type=bind",
+  "containerEnv": {
+    "SOPS_AGE_KEY_FILE": "${containerWorkspaceFolder}/.config/age.txt"
+  }
+}
