@@ -46,7 +46,13 @@
           podman
           python3
           sops
+          starship
         ];
+
+        shellHook = ''
+          eval "$(starship init bash)"
+          export SOPS_AGE_KEY_FILE="$(pwd)/.config/age.txt"
+        '';
       };
 
       nixosConfigurations = {

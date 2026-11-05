@@ -2,7 +2,3 @@
 /.direnv/
 /hosts/*/ssh_config
 /hosts/*/ssh_known_hosts
-
-# Local deployment credentials; encrypted SOPS files are tracked separately.
-/.config/age.txt
-containers/mc-whitelist-db/local-secrets.yaml
