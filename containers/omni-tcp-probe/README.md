@@ -67,8 +67,9 @@ Immediate stop (also remove the container's published listener):
 sudo systemctl stop podman-omni-tcp-probe.service
 ```
 
-To remove the service and firewall exception persistently, remove this module's
-import from `hosts/kagoya_vps/default.nix`, commit/push/pull that change, and rebuild.
+To remove the service and firewall exception persistently, delete
+`services.omni-tcp-probe.enable = true;` (and later the import) from
+`hosts/kagoya_vps/default.nix`, commit/push/pull that change, and rebuild.
 Confirm the container and port listener are gone. Do not delete historical logs
 until the investigation evidence has been saved.
 

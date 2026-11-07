@@ -9,7 +9,7 @@ Minecraft access control service for Oriom.
 - How to create:
   - `openssl rand -base64 48`
   - or `python -c "import secrets; print(secrets.token_urlsafe(48))"`
-- Store in: `containers/mc-whitelist-auth/mc-whitelist-auth.container.in` (or your SOPS secret source).
+- Store in: `containers/mc-whitelist-auth/secrets.yaml` (`./bin/secret-edit.sh mc-whitelist-auth`).
 
 ### GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET
 - Purpose: Google sign-in for the admin/user portal.
@@ -27,8 +27,9 @@ Minecraft access control service for Oriom.
 - How to create:
   - `openssl rand -hex 32`
 - Where to set:
-  - `containers/mc-whitelist-auth/mc-whitelist-auth.container.in` (`AUTHZ_API_TOKEN`)
-  - `containers/mc-velocity/mc-velocity.container` (`AUTHZ_API_TOKEN`)
+  - `containers/mc-whitelist-auth/secrets.yaml` (`AUTHZ_API_TOKEN`)
+  - the Velocity proxy that calls this API (not deployed from this repository yet;
+    the previous `containers/mc-velocity` plugin is in Git history before its removal)
 
 ## Minecraft UUID Proof by One-Time Challenge Code
 
@@ -63,11 +64,10 @@ Scope decision logic is implemented as a dedicated function to support future pr
 - `DB_URL`: CockroachDB connection string.
 - `PUBLIC_BASE_URL` / `BETTER_AUTH_URL`: public URL (`https://mc.oriom.dev`).
 
-### DB_URL secret override (recommended)
-- This service loads an additional SOPS secret entry from `containers/mc-whitelist-auth/secrets.yaml`.
-- Key name: `mc-whitelist-auth_db_env`
-- Value format: envfile content (single line), for example:
-  - `DB_URL=postgresql://whitelist_auth:<strong-password>@mc-whitelist-db.ts.home.arpa:26258/defaultdb?uselibpqcompat=true&sslmode=require`
+### DB_URL
+- `DB_URL` is a line in the `mc-whitelist-auth_env` envfile in
+  `containers/mc-whitelist-auth/secrets.yaml` (the only secret this module loads), e.g.
+  `DB_URL=postgresql://whitelist_auth:<strong-password>@mc-whitelist-db.ts.home.arpa:26258/defaultdb?uselibpqcompat=true&sslmode=require`
 
 ## Operational Notes
 - This repository no longer exposes `/api/v1/whitelist`.
