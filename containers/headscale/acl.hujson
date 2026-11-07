@@ -1,13 +1,19 @@
 {
+  // Nodes join with single-use tagged pre-auth keys, so no user owns them.
+  //   tag:ingress  kagoya-vps (public entry point, holds primary data)
+  //   tag:worker   home-desktop (lower trust, may be offline)
   "tagOwners": {
-    "tag:ingress": ["cluster@local"],
-    "tag:worker": ["cluster@local"]
+    "tag:ingress": [],
+    "tag:worker": []
   },
+  // Default deny. A worker can never open a connection to the ingress node.
   "acls": [
     {
+      // Off-host backups: kagoya-vps pushes to the append-only restic
+      // rest-server on home-desktop.
       "action": "accept",
       "src": ["tag:ingress"],
-      "dst": ["tag:worker:3000"]
+      "dst": ["tag:worker:8000"]
     }
   ]
 }
