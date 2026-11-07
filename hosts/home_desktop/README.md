@@ -35,6 +35,17 @@ so every "blocked" comes from the host ACL):
 
 Re-run the matrix after any change to Windows, Hyper-V, the switch or the ACLs.
 
+## Lifecycle matrix (2026-11-07, VM-level; host reboot not yet tested)
+
+| Event | Recovery to healthy (system running, tailnet online, receiver, data disk, VPS peer) |
+|---|---|
+| Hard power-off (`Stop-VM -TurnOff`) + start | 17 s; clock correct from Hyper-V time sync, NTP synced ~20 s after boot |
+| VM left off | restarted by the recovery task, healthy after 67 s |
+| Save state 2 min + resume (sleep) | 2 s; clock within 2 s |
+| Network loss 2 min | before fix: control connection stuck > 10 min; with `tcp_retries2 = 8` + tailscale watchdog: 60 s |
+
+Still to test: desktop-1 cold boot without login, Windows sleep/resume and Windows Update.
+
 ## Management path
 
 `chiba@desktop-1` (Windows OpenSSH, administrator) is the only way in. It is a
