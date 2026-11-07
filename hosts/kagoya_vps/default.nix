@@ -12,8 +12,11 @@
     ../../containers/mosimo
   ];
 
+  services.cluster-hello.enable = true;
   services.jpost-api.enable = true;
   services.mc-whitelist-auth.enable = true;
+  # Temporary: remove after the external connectivity investigation (see its README).
+  services.omni-tcp-probe.enable = true;
 
   networking = {
     hostName = "kagoya-vps";

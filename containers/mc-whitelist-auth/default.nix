@@ -1,7 +1,17 @@
 { config, lib, ... }:
 let
   cfg = config.services.mc-whitelist-auth;
-  image = "localhost/mc-whitelist-auth:${builtins.hashFile "sha256" ./Containerfile}";
+  localImage = import ../../lib/local-image.nix {
+    inherit lib;
+    podman = config.virtualisation.podman.package;
+  } {
+    name = "mc-whitelist-auth";
+    # Only files the Containerfile copies; edits elsewhere must not rebuild the image.
+    context = lib.fileset.toSource {
+      root = ./.;
+      fileset = lib.fileset.unions [ ./Containerfile ./src-old ];
+    };
+  };
 in
 {
   imports = [ ../mc-whitelist-db ];
@@ -19,7 +29,7 @@ in
     };
 
     virtualisation.oci-containers.containers.mc-whitelist-auth = {
-      inherit image;
+      inherit (localImage) image;
       pull = "never";
       dependsOn = [ "mc-whitelist-db" ];
       environment = {
@@ -42,11 +52,7 @@ in
       ];
     };
 
-    systemd.services.podman-mc-whitelist-auth.preStart = ''
-      ${config.virtualisation.podman.package}/bin/podman build \
-        --tag ${lib.escapeShellArg image} \
-        --file ${./Containerfile} ${./.}
-    '';
+    systemd.services.podman-mc-whitelist-auth.preStart = localImage.preStart;
 
     services.caddy.virtualHosts."mc.oriom.dev".extraConfig = ''
       @internal_api path /api/v1/*

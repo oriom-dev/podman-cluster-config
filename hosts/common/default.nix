@@ -1,5 +1,7 @@
 { pkgs, ... }:
 {
+  imports = [ ../../modules/container-policy.nix ];
+
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
     trusted-users = [ "root" "@wheel" ];

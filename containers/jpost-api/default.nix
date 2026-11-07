@@ -1,7 +1,17 @@
 { config, lib, ... }:
 let
   cfg = config.services.jpost-api;
-  image = "localhost/jpost-api:${builtins.hashFile "sha256" ./Containerfile}";
+  localImage = import ../../lib/local-image.nix {
+    inherit lib;
+    podman = config.virtualisation.podman.package;
+  } {
+    name = "jpost-api";
+    # Only files the Containerfile copies; edits elsewhere must not rebuild the image.
+    context = lib.fileset.toSource {
+      root = ./.;
+      fileset = lib.fileset.unions [ ./Containerfile ./src ];
+    };
+  };
 in
 {
   options.services.jpost-api.enable = lib.mkEnableOption "JPost API proxy";
@@ -15,7 +25,7 @@ in
     };
 
     virtualisation.oci-containers.containers.jpost-api = {
-      inherit image;
+      inherit (localImage) image;
       pull = "never";
       environmentFiles = [ config.sops.secrets.jpost-api_env.path ];
       ports = [ "127.0.0.1:3002:8080" ];
@@ -30,11 +40,7 @@ in
       ];
     };
 
-    systemd.services.podman-jpost-api.preStart = ''
-      ${config.virtualisation.podman.package}/bin/podman build \
-        --tag ${lib.escapeShellArg image} \
-        --file ${./Containerfile} ${./.}
-    '';
+    systemd.services.podman-jpost-api.preStart = localImage.preStart;
 
     services.caddy.virtualHosts."jpost.oriom.dev".extraConfig = ''
       reverse_proxy 127.0.0.1:3002

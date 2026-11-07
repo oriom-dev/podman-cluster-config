@@ -18,4 +18,8 @@
       policy.path = ./acl.hujson;
     };
   };
+
+  services.caddy.virtualHosts."headscale.oriom.dev".extraConfig = ''
+    reverse_proxy 127.0.0.1:8080
+  '';
 }
