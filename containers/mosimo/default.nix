@@ -9,8 +9,11 @@
   ];
   assertions = [{
     assertion = lib.versionAtLeast pkgs.nodejs_24.version packageOverrides.nodejs_24.requiredVersion;
-    message = "Mosimo requires Node.js >= ${packageOverrides.nodejs_24.requiredVersion} for CVE-2026-111497";
+    message = "Mosimo requires Node.js >= ${packageOverrides.nodejs_24.requiredVersion}";
   }];
+  warnings = lib.optional
+    (lib.versionOlder pkgs.nodejs_24.version packageOverrides.nodejs_24.fixedVersion)
+    "nodejs_24 ${pkgs.nodejs_24.version} is below ${packageOverrides.nodejs_24.fixedVersion} (CVE-2026-111497); see package-overrides/nodejs_24.nix";
 
   sops.age.keyFile = "/var/lib/sops-nix/key.txt";
   sops.secrets = {
