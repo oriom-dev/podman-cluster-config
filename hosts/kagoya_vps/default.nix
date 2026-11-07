@@ -40,6 +40,10 @@
     };
   };
 
+  # 2.9 GiB RAM and no swap: compressed swap absorbs build and restart spikes
+  # instead of invoking the OOM killer on a stateful service.
+  zramSwap.enable = true;
+
   boot.loader = {
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
