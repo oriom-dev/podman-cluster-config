@@ -11,9 +11,6 @@
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
 
-    nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
-    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
-
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -23,7 +20,7 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, flake-utils, disko, nixos-wsl, sops-nix, ... }:
+  outputs = inputs@{ self, nixpkgs, flake-utils, disko, sops-nix, ... }:
     let
       # All cluster nodes run x86_64-linux. Host outputs stay system-independent
       # (`.#nixosConfigurations.<host>`) because bin/vps-* and nixos-rebuild use that path.
@@ -48,8 +45,8 @@
           sops-nix.nixosModules.sops
           ./hosts/kagoya_vps
         ];
+        # Hyper-V VM on desktop-1; first install from `.#home-desktop-image`.
         home-desktop = mkHost [
-          nixos-wsl.nixosModules.default
           sops-nix.nixosModules.sops
           ./hosts/home_desktop
         ];
@@ -96,6 +93,11 @@
     in
     perSystem // {
       inherit nixosConfigurations;
+
+      packages = nixpkgs.lib.recursiveUpdate perSystem.packages {
+        ${hostSystem}.home-desktop-image =
+          nixosConfigurations.home-desktop.config.system.build.hypervImage;
+      };
 
       # `nix flake check` evaluates and builds every host system closure.
       checks = nixpkgs.lib.recursiveUpdate perSystem.checks or { } {
