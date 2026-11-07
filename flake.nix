@@ -109,6 +109,10 @@
               pkgs = nixpkgs.legacyPackages.${hostSystem};
               inherit (nixpkgs) lib;
             };
+            m3-k3s-tailnet = import ./tests/m3-k3s-tailnet.nix {
+              pkgs = nixpkgs.legacyPackages.${hostSystem};
+              inherit (nixpkgs) lib;
+            };
           };
       };
     };

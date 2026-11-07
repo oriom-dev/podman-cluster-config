@@ -11,41 +11,7 @@ let
   k3s = pkgs.k3s;
   tokenFile = pkgs.writeText "k3s-token" "m3-poc-token";
 
-  imageEnv = pkgs.buildEnv {
-    name = "m3-poc-image-env";
-    paths = with pkgs; [ tini bashInteractive coreutils socat getent ];
-  };
-  # Pause image and test workload in one: replies with the Pod's node name.
-  pocImage = pkgs.dockerTools.buildImage {
-    name = "test.local/poc";
-    tag = "local";
-    copyToRoot = imageEnv;
-    config.Entrypoint = [ "/bin/tini" "--" "/bin/sleep" "inf" ];
-  };
-
-  echoDaemonset = pkgs.writeText "echo.yaml" ''
-    apiVersion: apps/v1
-    kind: DaemonSet
-    metadata:
-      name: echo
-    spec:
-      selector:
-        matchLabels: { app: echo }
-      template:
-        metadata:
-          labels: { app: echo }
-        spec:
-          containers:
-            - name: echo
-              image: test.local/poc:local
-              imagePullPolicy: Never
-              env:
-                - name: NODE
-                  valueFrom: { fieldRef: { fieldPath: spec.nodeName } }
-              command: ["socat", "TCP4-LISTEN:8000,fork", "SYSTEM:echo $NODE"]
-              resources:
-                limits: { memory: 32Mi }
-  '';
+  workload = import ./lib/poc-workload.nix { inherit pkgs; };
 
   node = role: { config, ... }: {
     virtualisation = {
@@ -59,10 +25,10 @@ let
       enable = true;
       package = k3s;
       inherit role tokenFile;
-      images = [ k3s.airgap-images pocImage ];
+      images = [ k3s.airgap-images workload.image ];
       nodeIP = config.networking.primaryIPAddress;
       extraFlags = [
-        "--pause-image test.local/poc:local"
+        "--pause-image ${workload.imageRef}"
         "--flannel-iface eth1"
       ] ++ lib.optionals (role == "server") [
         "--disable traefik"
@@ -108,7 +74,7 @@ pkgs.testers.runNixOSTest {
         server.wait_until_succeeds("kubectl get serviceaccount default")
 
     with subtest("cross-node Pod traffic"):
-        server.succeed("kubectl apply -f ${echoDaemonset}")
+        server.succeed("kubectl apply -f ${workload.daemonset}")
         server.wait_until_succeeds("[ $(kubectl get ds echo -o json | jq .status.numberReady) -eq 2 ]", timeout=300)
         pods = server.succeed("kubectl get po -l app=echo -o json | jq -r '.items[] | .metadata.name + \" \" + .status.podIP + \" \" + .spec.nodeName'").splitlines()
         for line in pods:
