@@ -12,7 +12,7 @@ let
   minRestartIntervalSeconds = 900;
   stateFile = "/var/lib/happyview-jetstream-watchdog/last-restart";
 in
-{
+lib.mkIf config.services.happyview.enable {
   # The watchdog reads these debug lines; pin the filter so a HappyView default change
   # cannot silently turn every check into a restart. Per-request tower_http debug
   # lines are dropped to keep the journal small.

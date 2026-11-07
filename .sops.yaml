@@ -14,7 +14,7 @@ keys:
   # From home-desktop's SSH host key (ssh-to-age); changes if the VM is reinstalled.
   - &home_desktop age1tf4ftvryalecrx4njcdnw48ttsn9dv3e2k4vyw3e5tfk9qe0uyssjm5ee7
 creation_rules:
-  - path_regex: (^|/)containers/(backup|jpost-api|mc-whitelist-auth|mc-whitelist-db|mosimo)/secrets\.yaml$
+  - path_regex: (^|/)containers/(backup|happyview|jpost-api|mc-whitelist-auth|mc-whitelist-db)/secrets\.yaml$
     key_groups:
       - age:
           - *dell2_nixos

@@ -10,14 +10,21 @@
     ../../containers/jpost-api
     ../../containers/mc-whitelist-auth
     ../../containers/omni-tcp-probe
-    ../../containers/mosimo
+    ../../containers/mosimo-pds
+    ../../containers/happyview
+    ../../containers/mosimo-web
   ];
 
   services.cluster-hello.enable = true;
   services.jpost-api.enable = true;
   services.mc-whitelist-auth.enable = true;
+  services.mosimo-pds.enable = true;
+  services.happyview.enable = true; # with its BSAF sidecar
+  services.mosimo-web.enable = true;
   # Temporary: remove after the external connectivity investigation (see its README).
   services.omni-tcp-probe.enable = true;
+
+  sops.age.keyFile = "/var/lib/sops-nix/key.txt";
 
   networking = {
     hostName = "kagoya-vps";

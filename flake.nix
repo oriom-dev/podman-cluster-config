@@ -113,6 +113,10 @@
               pkgs = nixpkgs.legacyPackages.${hostSystem};
               inherit (nixpkgs) lib;
             };
+            m3-oci-parity = import ./tests/m3-oci-parity.nix {
+              pkgs = nixpkgs.legacyPackages.${hostSystem};
+              inherit (nixpkgs) lib;
+            };
           };
       };
     };
