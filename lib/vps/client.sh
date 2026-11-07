@@ -42,6 +42,25 @@ require_local_environment() {
   [[ -f $REMOTE_DIR/host.sh ]] || fail 'missing VPS support files'
 }
 
+# Refuse to release while a secret still holds a `__SET_ME_*__` placeholder.
+# Prints only file and variable names, never values.
+require_complete_secrets() {
+  local file missing=0 plain names
+  [[ -n ${SOPS_AGE_KEY_FILE:-} ]] || export SOPS_AGE_KEY_FILE="$REPO_ROOT/.config/age.txt"
+  [[ -s $SOPS_AGE_KEY_FILE ]] || fail "operator age key not found: $SOPS_AGE_KEY_FILE"
+  while IFS= read -r file; do
+    plain=$(sops --config "$REPO_ROOT/.sops.yaml" -d "$REPO_ROOT/$file" 2>/dev/null) ||
+      fail "cannot decrypt $file with $SOPS_AGE_KEY_FILE"
+    names=$(grep -oE '[A-Za-z0-9_]+=__SET_ME_[A-Z0-9_]*__' <<<"$plain" | cut -d= -f1 || true)
+    plain=
+    if [[ -n $names ]]; then
+      printf 'error: %s has unset values: %s\n' "$file" "$(tr '\n' ' ' <<<"$names")" >&2
+      missing=1
+    fi
+  done < <(git -C "$REPO_ROOT" ls-files 'containers/*/secrets.yaml')
+  (( missing == 0 )) || fail 'set them with ./bin/secret-edit.sh SERVICE'
+}
+
 configure_vps() {
   local option
   [[ $# -ge 1 && $1 != -* ]] || fail 'missing SSH target'

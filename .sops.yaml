@@ -1,0 +1,18 @@
+# Single SOPS policy for the repository. To change recipients, edit this file and run
+# `sops updatekeys <file>` for each matching file.
+#
+# A secret is readable only by the operator and the host that runs its service.
+# Never add a catch-all rule: a new secret must get an explicit owner here.
+#
+# Private keys (never committed):
+#   dell2_nixos  -> .config/age.txt on the operator workstation
+#   kagoya_vps1  -> /var/lib/sops-nix/key.txt on kagoya-vps (backup: .config/kagoya_vps1.age.txt)
+keys:
+  - &dell2_nixos age1mr8f7566yywrvj8ezqggyxddgeppakyh3tkl7ky2gy2qyq6dp9msg0s9eg
+  - &kagoya_vps1 age1dztjsgkkq6qgr2s2zapjs7h9ffydmrkgh8k4c239ykkjvvj9fvnskhj7dd
+creation_rules:
+  - path_regex: (^|/)containers/(jpost-api|mc-whitelist-auth|mc-whitelist-db|mosimo)/secrets\.yaml$
+    key_groups:
+      - age:
+          - *dell2_nixos
+          - *kagoya_vps1

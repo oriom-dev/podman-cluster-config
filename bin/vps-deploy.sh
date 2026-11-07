@@ -11,6 +11,7 @@ fi
 [[ $# -ge 1 ]] || fail 'usage: vps-deploy.sh [--yes] TARGET [SSH_OPTION...]'
 configure_vps "$@"
 require_local_environment
+require_complete_secrets
 acquire_local_lock
 confirm_action deploy "$yes_option"
 
