@@ -11,11 +11,15 @@
 let
   root = "/var/lib/backup";
   sqlite = "${pkgs.sqlite}/bin/sqlite3";
+  podman = "${config.virtualisation.podman.package}/bin/podman";
 
   # Consistent copy of a live WAL-mode database, then verify the copy.
+  # VACUUM INTO reads one snapshot in a single transaction. The `.backup` command
+  # restarts whenever another process writes, so it never finished on the 16 GB
+  # HappyView database that ingests Jetstream continuously.
   snapshotSqlite = { src, dst, check ? "integrity_check" }: ''
     rm -f ${dst}
-    ${sqlite} ${src} ".timeout 60000" ".backup '${dst}'"
+    ${sqlite} ${src} ".timeout 60000" "VACUUM INTO '${dst}'"
     result=$(${sqlite} ${dst} "PRAGMA ${check};")
     [ "$result" = ok ] || { echo "${check} failed for ${dst}: $result" >&2; exit 1; }
   '';
@@ -71,6 +75,12 @@ in
           src = "/var/lib/headscale/db.sqlite";
           dst = "${root}/staging-daily/headscale.sqlite";
         })
+        # pg_dump runs inside the container over the local socket (trust auth).
+        ''
+          ${podman} exec mc-whitelist-db pg_dump -U whitelist_auth -d defaultdb \
+            --format=custom > ${root}/staging-daily/mc-whitelist.pgdump
+          [ -s ${root}/staging-daily/mc-whitelist.pgdump ]
+        ''
       ];
       extraPaths = [
         "/var/lib/headscale/noise_private.key"
@@ -87,7 +97,8 @@ in
   systemd.services = lib.genAttrs [ "restic-backups-pds" "restic-backups-daily" ] (_: {
     serviceConfig = {
       Nice = 19;
-      IOSchedulingClass = "idle";
+      IOSchedulingClass = "best-effort";
+      IOSchedulingPriority = 7;
       MemoryHigh = "384M";
     };
   }) // {
@@ -95,12 +106,13 @@ in
     # directory and run a full integrity check on every restored database.
     backup-restore-drill = {
       description = "Restore latest backups and verify database integrity";
-      path = [ pkgs.restic pkgs.sqlite pkgs.coreutils pkgs.findutils ];
+      path = [ pkgs.restic pkgs.sqlite pkgs.postgresql_17 pkgs.coreutils pkgs.findutils ];
       environment.RESTIC_PASSWORD_FILE = config.sops.secrets.restic_password.path;
       serviceConfig = {
         Type = "oneshot";
         Nice = 19;
-        IOSchedulingClass = "idle";
+        IOSchedulingClass = "best-effort";
+        IOSchedulingPriority = 7;
         MemoryHigh = "384M";
       };
       script = ''
@@ -117,6 +129,10 @@ in
             [ "$result" = ok ] || { echo "integrity_check failed: $db: $result" >&2; exit 1; }
             count=$((count + 1))
           done < <(find "$scratch/$job" -type f \( -name '*.sqlite' -o -name '*.db' \))
+          while IFS= read -r dump; do
+            pg_restore --list "$dump" > /dev/null
+            count=$((count + 1))
+          done < <(find "$scratch/$job" -type f -name '*.pgdump')
           [ "$count" -gt 0 ] || { echo "no database restored from $job" >&2; exit 1; }
           echo "restore drill: $job ok ($count databases)"
           rm -rf "${scratch:?}/$job"
