@@ -27,9 +27,11 @@ in
     environment = {
       RESTIC_PASSWORD_FILE = config.sops.secrets.restic_password.path;
       RESTIC_REST_USERNAME = user;
+      RESTIC_CACHE_DIR = "/var/cache/backup-offsite";
     };
     serviceConfig = {
       Type = "oneshot";
+      CacheDirectory = "backup-offsite";
       Nice = 19;
       IOSchedulingClass = "best-effort";
       IOSchedulingPriority = 7;

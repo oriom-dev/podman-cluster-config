@@ -1,6 +1,6 @@
 # Encrypted backups for kagoya-vps persistent data (roadmap M1/M9C).
 #
-# SQLite databases are snapshotted with VACUUM INTO and integrity-checked before
+# SQLite databases are replicated with sqlite3_rsync and integrity-checked before
 # restic stores them, so snapshots are application-consistent without stopping
 # services. Local repositories cover corruption and mistakes; offsite.nix copies
 # every snapshot to an append-only repository on home-desktop for host loss.
@@ -10,15 +10,23 @@
 let
   root = "/var/lib/backup";
   sqlite = "${pkgs.sqlite}/bin/sqlite3";
+  rsync = "${pkgs.sqlite-rsync}/bin/sqlite3_rsync";
   podman = "${config.virtualisation.podman.package}/bin/podman";
 
-  # Consistent copy of a live WAL-mode database, then verify the copy.
-  # VACUUM INTO reads one snapshot in a single transaction. The `.backup` command
-  # restarts whenever another process writes, so it never finished on the 16 GB
-  # HappyView database that ingests Jetstream continuously.
+  # Consistent replica of a live WAL-mode database, then verify it.
+  # - `.backup` restarts whenever another process writes, so it never finished on
+  #   the 16 GB HappyView database that ingests Jetstream continuously.
+  # - VACUUM INTO finishes, but repacks every page, so each hourly PDS snapshot
+  #   added ~80 MB to the repositories (fatal for the append-only off-host copy).
+  # sqlite3_rsync copies one consistent snapshot and keeps the page layout, and the
+  # replica persists between runs, so only changed pages are rewritten and restic
+  # deduplicates the rest.
   snapshotSqlite = { src, dst, check ? "integrity_check" }: ''
-    rm -f ${dst}
-    ${sqlite} ${src} ".timeout 60000" "VACUUM INTO '${dst}'"
+    if ! ${rsync} ${src} ${dst}; then
+      echo "sqlite3_rsync failed for ${dst}; rebuilding the replica" >&2
+      rm -f ${dst}
+      ${rsync} ${src} ${dst}
+    fi
     result=$(${sqlite} ${dst} "PRAGMA ${check};")
     [ "$result" = ok ] || { echo "${check} failed for ${dst}: $result" >&2; exit 1; }
   '';
@@ -33,7 +41,7 @@ let
       install -d -m 0700 ${root}/staging-${name}
       ${prepare}
     '';
-    backupCleanupCommand = "rm -rf ${root}/staging-${name}";
+    # Staging is kept: the replicas are updated in place on the next run.
     timerConfig = timer;
     pruneOpts = prune;
   };
