@@ -103,7 +103,13 @@
       checks = nixpkgs.lib.recursiveUpdate perSystem.checks or { } {
         ${hostSystem} = nixpkgs.lib.mapAttrs
           (_: host: host.config.system.build.toplevel)
-          nixosConfigurations;
+          nixosConfigurations // {
+            # Roadmap M3 PoC in disposable QEMU VMs (needs KVM; several minutes).
+            m3-k3s-poc = import ./tests/m3-k3s-poc.nix {
+              pkgs = nixpkgs.legacyPackages.${hostSystem};
+              inherit (nixpkgs) lib;
+            };
+          };
       };
     };
 }
