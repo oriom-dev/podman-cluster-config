@@ -1,6 +1,9 @@
 { config, inputs, lib, packageOverrides, pkgs, ... }:
 {
-  imports = [ (inputs.mosimo + "/nixos") ];
+  imports = [
+    (inputs.mosimo + "/nixos")
+    ./jetstream-watchdog.nix
+  ];
 
   nixpkgs.overlays = [
     (_final: _prev: {
