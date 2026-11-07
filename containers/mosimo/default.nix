@@ -26,10 +26,15 @@
       format = "yaml";
     };
   };
-  sops.templates."happyview.env".content = ''
-    SESSION_SECRET=${config.sops.placeholder.happyview_session_secret}
-    TOKEN_ENCRYPTION_KEY=${config.sops.placeholder.happyview_token_encryption_key}
-  '';
+  sops.templates."happyview.env" = {
+    content = ''
+      SESSION_SECRET=${config.sops.placeholder.happyview_session_secret}
+      TOKEN_ENCRYPTION_KEY=${config.sops.placeholder.happyview_token_encryption_key}
+    '';
+    # The container reads this file only at start; without this a rotated secret
+    # stays inactive until an unrelated restart.
+    restartUnits = [ "podman-happyview.service" ];
+  };
 
   services.happyview = {
     enable = true;
