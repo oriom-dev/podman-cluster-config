@@ -43,13 +43,17 @@ Re-run the matrix after any change to Windows, Hyper-V, the switch or the ACLs.
 | VM left off | restarted by the recovery task, healthy after 67 s |
 | Save state 2 min + resume (sleep) | 2 s; clock within 2 s |
 | Network loss 2 min | before fix: control connection stuck > 10 min; with `tcp_retries2 = 8` + tailscale watchdog: 60 s |
+| desktop-1 S3 sleep 3 min, woken by a wake timer | VM was paused, not rebooted; healthy 11 s after the host woke |
 | desktop-1 reboot, nobody logged in | Windows up after ~80 s; VM auto-started 60 s later and rejoined the tailnet 3 min 9 s after the reboot, 8 min before anyone logged in |
 
 The management path (`chiba@desktop-1` over the Windows Tailscale tailnet) only
 returns after an interactive login, because Windows Tailscale is not in unattended
 mode. The VM does not depend on it.
 
-Still to test: Windows sleep/resume and Windows Update.
+desktop-1 supports only S3 sleep (no Modern Standby), so it is offline while
+asleep and TeamViewer cannot reach it; wake it with a wake timer or Wake-on-LAN.
+
+Still to test: Windows Update.
 
 ## Management path
 
