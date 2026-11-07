@@ -7,12 +7,20 @@
 # Private keys (never committed):
 #   dell2_nixos  -> .config/age.txt on the operator workstation
 #   kagoya_vps1  -> /var/lib/sops-nix/key.txt on kagoya-vps (backup: .config/kagoya_vps1.age.txt)
+#   home_desktop -> /etc/ssh/ssh_host_ed25519_key on home-desktop
 keys:
   - &dell2_nixos age1mr8f7566yywrvj8ezqggyxddgeppakyh3tkl7ky2gy2qyq6dp9msg0s9eg
   - &kagoya_vps1 age1dztjsgkkq6qgr2s2zapjs7h9ffydmrkgh8k4c239ykkjvvj9fvnskhj7dd
+  # From home-desktop's SSH host key (ssh-to-age); changes if the VM is reinstalled.
+  - &home_desktop age1tf4ftvryalecrx4njcdnw48ttsn9dv3e2k4vyw3e5tfk9qe0uyssjm5ee7
 creation_rules:
   - path_regex: (^|/)containers/(backup|jpost-api|mc-whitelist-auth|mc-whitelist-db|mosimo)/secrets\.yaml$
     key_groups:
       - age:
           - *dell2_nixos
           - *kagoya_vps1
+  - path_regex: (^|/)containers/backup-receiver/secrets\.yaml$
+    key_groups:
+      - age:
+          - *dell2_nixos
+          - *home_desktop

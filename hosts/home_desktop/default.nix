@@ -14,6 +14,7 @@ in
   imports = [
     ../common
     "${modulesPath}/virtualisation/hyperv-image.nix"
+    ../../containers/backup-receiver
   ];
 
   virtualisation.hypervGuest.enable = true;

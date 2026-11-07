@@ -1,10 +1,9 @@
-# Interim encrypted backups for kagoya-vps persistent data (roadmap M1/M9C).
+# Encrypted backups for kagoya-vps persistent data (roadmap M1/M9C).
 #
-# SQLite databases are copied with the online backup API and integrity-checked
-# before restic stores them, so snapshots are application-consistent without
-# stopping services. Repositories live on the same disk for now: this protects
-# against corruption and mistakes, not disk or host loss. A second repository on
-# home-desktop (over the tailnet) is the next step.
+# SQLite databases are snapshotted with VACUUM INTO and integrity-checked before
+# restic stores them, so snapshots are application-consistent without stopping
+# services. Local repositories cover corruption and mistakes; offsite.nix copies
+# every snapshot to an append-only repository on home-desktop for host loss.
 #
 # Restore:  sudo restic-<job> snapshots / restore latest --target /tmp/restore
 { config, lib, pkgs, ... }:
@@ -40,6 +39,8 @@ let
   };
 in
 {
+  imports = [ ./offsite.nix ];
+
   sops.secrets.restic_password = {
     sopsFile = ./secrets.yaml;
     format = "yaml";
