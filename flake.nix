@@ -23,69 +23,85 @@
     };
   };
 
-  outputs = inputs@{ nixpkgs, flake-utils, nixvim, disko, nixos-wsl, sops-nix, ... }:
-    flake-utils.lib.eachDefaultSystem ( system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
+  outputs = inputs@{ self, nixpkgs, flake-utils, disko, nixos-wsl, sops-nix, ... }:
+    let
+      # All cluster nodes run x86_64-linux. Host outputs stay system-independent
+      # (`.#nixosConfigurations.<host>`) because bin/vps-* and nixos-rebuild use that path.
+      hostSystem = "x86_64-linux";
 
-        packageOverrides = {
-          nodejs_24 = import ./package-overrides/nodejs_24.nix { inherit system; };
+      mkHost = modules: nixpkgs.lib.nixosSystem {
+        system = hostSystem;
+        specialArgs = {
+          inherit inputs;
+          packageOverrides = {
+            nodejs_24 = import ./package-overrides/nodejs_24.nix { system = hostSystem; };
+          };
         };
+        modules = modules ++ [{
+          system.configurationRevision = self.rev or self.dirtyRev or null;
+        }];
+      };
 
-        mkHost = modules: nixpkgs.lib.nixosSystem {
-          inherit system;
-          specialArgs = { inherit inputs packageOverrides; };
-          modules = modules ++ [{
-            system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
-          }];
-        };
-      in {
-        packages.vps = pkgs.buildEnv {
-          name = "oriom-vps-cli";
-          paths = with pkgs; [
-            age
-            bash
-            coreutils
-            curl
-            git
-            gnugrep
-            nix
-            openssh
-            sops
-            util-linux
-          ];
-        };
+      nixosConfigurations = {
+        kagoya-vps = mkHost [
+          disko.nixosModules.disko
+          sops-nix.nixosModules.sops
+          ./hosts/kagoya_vps
+        ];
+        home-desktop = mkHost [
+          nixos-wsl.nixosModules.default
+          sops-nix.nixosModules.sops
+          ./hosts/home_desktop
+        ];
+      };
 
-        devShells.default = pkgs.mkShell {
-          packages = with pkgs; [
-            age
-            curl
-            git
-            nil
-            nixos-rebuild
-            openssh
-            podman
-            python3
-            sops
-          ];
+      perSystem = flake-utils.lib.eachDefaultSystem (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in {
+          packages.vps = pkgs.buildEnv {
+            name = "oriom-vps-cli";
+            paths = with pkgs; [
+              age
+              bash
+              coreutils
+              curl
+              git
+              gnugrep
+              nix
+              openssh
+              sops
+              util-linux
+            ];
+          };
 
-          shellHook = ''
-            export SOPS_AGE_KEY_FILE="$(pwd)/.config/age.txt"
-          '';
-        };
+          devShells.default = pkgs.mkShell {
+            packages = with pkgs; [
+              age
+              curl
+              git
+              nil
+              nixos-rebuild
+              openssh
+              podman
+              python3
+              sops
+            ];
 
-        nixosConfigurations = {
-          kagoya-vps = mkHost [
-            disko.nixosModules.disko
-            sops-nix.nixosModules.sops
-            ./hosts/kagoya_vps
-          ];
-          home-desktop = mkHost [
-            nixos-wsl.nixosModules.default
-            sops-nix.nixosModules.sops
-            ./hosts/home_desktop
-          ];
-        };
-      }
-    );
+            shellHook = ''
+              export SOPS_AGE_KEY_FILE="$(pwd)/.config/age.txt"
+            '';
+          };
+        });
+    in
+    perSystem // {
+      inherit nixosConfigurations;
+
+      # `nix flake check` evaluates and builds every host system closure.
+      checks = nixpkgs.lib.recursiveUpdate perSystem.checks or { } {
+        ${hostSystem} = nixpkgs.lib.mapAttrs
+          (_: host: host.config.system.build.toplevel)
+          nixosConfigurations;
+      };
+    };
 }
