@@ -3,6 +3,7 @@
   imports = [
     ../common
     ./disko.nix
+    ../../containers/backup
     ../../containers/headscale
     ../../containers/caddy
     ../../containers/cluster-hello
