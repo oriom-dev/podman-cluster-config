@@ -1,2 +1,5 @@
-*.sh text eol=lf
-.envrc text eol=lf
+# Everything deployed is built from the working tree (Nix git+file), so line
+# endings must be LF there regardless of core.autocrlf on the operator machine.
+* text=auto eol=lf
+*.png binary
+*.ico binary

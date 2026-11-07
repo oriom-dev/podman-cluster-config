@@ -42,6 +42,13 @@ require_local_environment() {
   [[ -f $REMOTE_DIR/host.sh ]] || fail 'missing VPS support files'
 }
 
+# Nix builds from the working tree, so a CRLF checkout ships broken scripts.
+require_lf_worktree() {
+  local crlf
+  crlf=$(git -C "$REPO_ROOT" ls-files --eol | awk '$2 ~ /crlf/ {print $NF}')
+  [[ -z $crlf ]] || fail "working tree has CRLF files (set core.autocrlf=false and re-checkout): $(head -3 <<<"$crlf" | tr '\n' ' ')"
+}
+
 # Refuse to release while a secret still holds a `__SET_ME_*__` placeholder.
 # Prints only file and variable names, never values.
 require_complete_secrets() {

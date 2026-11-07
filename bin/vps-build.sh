@@ -5,6 +5,7 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/../lib/vps/client.sh"
 [[ $# -eq 0 ]] || fail 'vps-build.sh accepts no options'
 enter_vps_environment "${BASH_SOURCE[0]}" "$@"
 require_local_environment
+require_lf_worktree
 require_complete_secrets
 acquire_local_lock
 build_system
