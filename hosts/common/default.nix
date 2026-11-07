@@ -1,6 +1,9 @@
 { pkgs, ... }:
 {
-  imports = [ ../../modules/container-policy.nix ];
+  imports = [
+    ../../modules/container-policy.nix
+    ../../modules/tailscale-watchdog.nix
+  ];
 
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
