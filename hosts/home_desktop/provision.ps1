@@ -72,7 +72,20 @@ Get-VMIntegrationService -VMName $VmName |
 Set-VMNetworkAdapter -VMName $VmName -DhcpGuard On -RouterGuard On -MacAddressSpoofing Off
 
 # --- Port ACLs (host-enforced) -------------------------------------------------
-Get-VMNetworkAdapterExtendedAcl -VMName $VmName | Remove-VMNetworkAdapterExtendedAcl
+# Rebuilt on every run. Deny-everything guards (weight 900, above every real rule)
+# go in first and come out last, so the VM is never unrestricted while the rule
+# set is being replaced.
+$guardWeight = 900
+foreach ($dir in 'Inbound', 'Outbound') {
+    foreach ($any in '0.0.0.0/0', '::/0') {
+        Add-VMNetworkAdapterExtendedAcl -VMName $VmName -Direction $dir -Action Deny `
+            -RemoteIPAddress $any -Weight $guardWeight
+        $guardWeight++
+    }
+}
+Get-VMNetworkAdapterExtendedAcl -VMName $VmName |
+    Where-Object { $_.Weight -lt 900 } |
+    Remove-VMNetworkAdapterExtendedAcl
 function Add-Acl([string] $Direction, [string] $Action, [string] $Remote, [int] $Weight,
                  [string] $Protocol = $null, [string] $LocalPort = $null, [bool] $Stateful = $false) {
     $acl = @{ VMName = $VmName; Direction = $Direction; Action = $Action;
@@ -103,6 +116,25 @@ Add-Acl Outbound Deny '::/0' 50
 Add-Acl Inbound Deny '::/0' 51
 # Management: SSH from the Windows host only (highest weight).
 Add-Acl Inbound Allow "$Prefix.1/32" 100 'TCP' -LocalPort '22' -Stateful $true
+
+Get-VMNetworkAdapterExtendedAcl -VMName $VmName |
+    Where-Object { $_.Weight -ge 900 } |
+    Remove-VMNetworkAdapterExtendedAcl
+
+# --- Periodic recovery ---------------------------------------------------------
+# Every 5 minutes as SYSTEM (no login needed): start the VM if it is not running,
+# unless an operator created the maintenance marker to keep it down on purpose.
+$marker = Join-Path $SystemDir 'maintenance'
+$check = "if (-not (Test-Path '$marker')) { `$vm = Get-VM -Name '$VmName'; " +
+         "if (`$vm.State -ne 'Running') { Start-VM -Name '$VmName' } }"
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' `
+    -Argument "-NoProfile -NonInteractive -Command `"$check`""
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) `
+    -RepetitionInterval (New-TimeSpan -Minutes 5)
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries `
+    -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 2)
+Register-ScheduledTask -TaskName "$VmName-recovery" -Action $action -Trigger $trigger `
+    -Settings $settings -User 'SYSTEM' -RunLevel Highest -Force | Out-Null
 
 Get-VMNetworkAdapterExtendedAcl -VMName $VmName |
     Sort-Object Weight -Descending |

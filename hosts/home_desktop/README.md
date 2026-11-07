@@ -12,6 +12,7 @@ reaches Windows as an administrator. That cannot isolate Internet-facing workloa
 | Data disk | `S:\HyperV\home-desktop\home-desktop-data.vhdx`, 512 GB, HDD → `/srv/data` |
 | Network | internal switch `oriom-node` + WinNAT, VM `10.250.0.2/24`, host `10.250.0.1` |
 | Start | Hyper-V automatic start at host boot (no login), shutdown with the host |
+| Recovery | Task `home-desktop-recovery` (SYSTEM, every 5 min) starts the VM if it is not running. Create `C:\HyperV\home-desktop\maintenance` to keep it down on purpose |
 
 ## Isolation (host-enforced)
 
