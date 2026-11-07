@@ -61,13 +61,13 @@ Scope decision logic is implemented as a dedicated function to support future pr
 
 ## Non-secret but required
 - `ADMIN_EMAIL_ALLOWLIST`: comma-separated admin emails.
-- `DB_URL`: CockroachDB connection string.
+- `DB_URL`: PostgreSQL connection string.
 - `PUBLIC_BASE_URL` / `BETTER_AUTH_URL`: public URL (`https://mc.oriom.dev`).
 
 ### DB_URL
 - `DB_URL` is a line in the `mc-whitelist-auth_env` envfile in
   `containers/mc-whitelist-auth/secrets.yaml` (the only secret this module loads), e.g.
-  `DB_URL=postgresql://whitelist_auth:<strong-password>@mc-whitelist-db.ts.home.arpa:26258/defaultdb?uselibpqcompat=true&sslmode=require`
+  `DB_URL=postgresql://whitelist_auth:<strong-password>@mc-whitelist-db.ts.home.arpa:5432/defaultdb?sslmode=disable`
 
 ## Operational Notes
 - This repository no longer exposes `/api/v1/whitelist`.

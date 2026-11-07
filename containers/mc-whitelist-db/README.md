@@ -1,20 +1,25 @@
 # mc-whitelist-db
 
-CockroachDB backend for mc-whitelist-auth.
+PostgreSQL 17 backend for mc-whitelist-auth (replaced CockroachDB on 2026-11-07).
 
 ## Security posture
-- Runs in secure mode (not `--insecure`).
-- SQL endpoint is exposed only in the DB tailscale sidecar namespace.
-- Admin HTTP endpoint is bound to localhost only.
-- App access uses username/password over TLS.
+- Reachable only from containers on the `mc-whitelist` Podman network
+  (alias `mc-whitelist-db.ts.home.arpa:5432`); no host port is published.
+- Runs as the image's postgres user (uid 70) with a read-only root filesystem,
+  no capabilities, `no-new-privileges`, and 256 MiB / 0.5 CPU limits.
+- TLS is off: traffic never leaves the single-host bridge.
 
-## Required SOPS secret entries
-Set these entries in module secrets files:
+## Secrets
+- `containers/mc-whitelist-db/secrets.yaml`, key `mc-whitelist-db_env`:
+  `POSTGRES_PASSWORD=<password>`. Applied only when the volume is first
+  initialised; to rotate, run `ALTER ROLE whitelist_auth PASSWORD '...'` and then
+  update both secrets.
+- `containers/mc-whitelist-auth/secrets.yaml`, key `mc-whitelist-auth_env`:
+  `DB_URL=postgresql://whitelist_auth:<same password>@mc-whitelist-db.ts.home.arpa:5432/defaultdb?sslmode=disable`
 
-- `containers/mc-whitelist-db/secrets.yaml`
-	- key: `mc-whitelist-db_env`
-	- value example: `DB_APP_PASSWORD=<strong-random-password>`
+The app creates its tables on start (`ensureSchema`).
 
-- `containers/mc-whitelist-auth/secrets.yaml`
-	- key: `mc-whitelist-auth_env` (one line of that envfile)
-	- value example: `DB_URL=postgresql://whitelist_auth:<same-password>@mc-whitelist-db.ts.home.arpa:26258/defaultdb?uselibpqcompat=true&sslmode=require`
+## Data
+- Volume `mc-whitelist-pg-data`; nightly `pg_dump` via `containers/backup`.
+- The old CockroachDB volume `mc-whitelist-db-data` is kept for rollback only:
+  `sudo podman volume rm mc-whitelist-db-data` once PostgreSQL is settled.
