@@ -1,5 +1,0 @@
-[Unit]
-Description=Cluster Internal Network
-
-[Network]
-IPv6=true
