@@ -48,7 +48,7 @@ health_once() {
   grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' <<< "$pds_health" || return 1
   curl --fail --silent --show-error --output /dev/null \
     --connect-timeout 3 --max-time 5 \
-    https://pds.oriom.dev/.well-known/mosimo/trust/snapshot.cbor || return 1
+    https://pds.oriom.dev/.well-known/mosimo/attest/revocations || return 1
   appview_status=$(curl --silent --show-error --output /dev/null \
     --write-out '%{http_code}' --connect-timeout 3 --max-time 5 \
     https://appview.oriom.dev/) || return 1

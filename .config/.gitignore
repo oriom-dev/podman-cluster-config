@@ -1,2 +1,5 @@
 age.txt
 *.age.txt
+*.age.txt
+# Offline Mosimo trust material (root/CA/importer keys); only public exports leave this directory
+mosimo-trust/

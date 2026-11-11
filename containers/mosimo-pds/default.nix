@@ -16,11 +16,12 @@ in
         { id = "oriom"; endpoint = "https://pds.oriom.dev"; }
       ];
       relays = [ "wss://relay.damus.io" ];
+      # Exported by `identity-cli.mjs receiver-export` from the offline root in .config/mosimo-trust.
       publicInformation = (builtins.fromJSON
         (builtins.readFile ./public-information.json)).publicInformation;
     };
 
-    # Catch-all; containers/happyview adds the BSAF trust snapshot path on this host.
+    # Catch-all; containers/happyview adds the CA revocation list path on this host.
     services.caddy.virtualHosts."pds.oriom.dev".extraConfig = ''
       handle {
         reverse_proxy 127.0.0.1:2583

@@ -43,7 +43,8 @@ in
     # Sidecar: imports BSAF posts into HappyView and publishes them to the PDS relay.
     services.mosimo-bsaf = {
       enable = true;
-      # jma-alert-bot.bsky.social (unofficial); handle and PLC document checked 2026-10-18.
+      # jma-alert-bot.bsky.social and bsaf-kikikuru-bot.bsky.social (unofficial); handles and PLC
+      # documents checked 2026-10-18. Credentials/roots come from bin/mosimo-trust-install.sh.
       authors = [
         "did:plc:vwi7zhfyamyvrg5v6ycjgzxi"
         "did:plc:kxwz5cz7o6g4jlmxh6doyfsm"
@@ -62,13 +63,15 @@ in
       "appview.oriom.dev".extraConfig = ''
         reverse_proxy 127.0.0.1:3000
       '';
-      # The publisher fetches the root-signed trust snapshot from this URL (roots.json).
+      # Revocation list of the Oriom Mosimo CA (issuerDomain pds.oriom.dev): a CA-signed, static
+      # file that changes only when a key is revoked (attest.revocation.list). Relays and the
+      # publisher fetch it periodically; it carries no secrets.
       "pds.oriom.dev".extraConfig = ''
-        handle /.well-known/mosimo/trust/snapshot.cbor {
+        handle /.well-known/mosimo/attest/revocations {
           root * /var/lib/mosimo-trust
-          rewrite * /snapshot.cbor
+          rewrite * /revocations.cbor
           header Content-Type application/cbor
-          header Cache-Control "no-store"
+          header Cache-Control "max-age=300"
           file_server
         }
       '';

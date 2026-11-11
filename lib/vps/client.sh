@@ -171,8 +171,8 @@ external_health() {
     fail 'external PDS health response is invalid'
   curl --fail --silent --show-error --output /dev/null \
     --connect-timeout 5 --max-time 20 \
-    https://pds.oriom.dev/.well-known/mosimo/trust/snapshot.cbor ||
-    fail 'external trust snapshot check failed'
+    https://pds.oriom.dev/.well-known/mosimo/attest/revocations ||
+    fail 'external revocation list check failed'
   appview_status=$(curl --silent --show-error --output /dev/null \
     --write-out '%{http_code}' --connect-timeout 5 --max-time 20 \
     https://appview.oriom.dev/) || fail 'external AppView check failed'
