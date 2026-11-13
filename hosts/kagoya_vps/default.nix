@@ -13,6 +13,7 @@
     ../../containers/mosimo-pds
     ../../containers/happyview
     ../../containers/mosimo-web
+    ../../containers/mosimo-gov-web
   ];
 
   services.cluster-hello.enable = true;
@@ -21,6 +22,7 @@
   services.mosimo-pds.enable = true;
   services.happyview.enable = true; # with its BSAF sidecar
   services.mosimo-web.enable = true;
+  services.mosimo-gov-web.enable = true;
   # Temporary: remove after the external connectivity investigation (see its README).
   services.omni-tcp-probe.enable = true;
 

@@ -37,5 +37,5 @@ checking external connectivity. It is not a web service. See its README for capt
 limits and removal instructions.
 
 External implementations are also exposed through a local `containers/<name>/default.nix`
-(see `mosimo-pds`, `happyview` and `mosimo-web`, three independent services from one repository). The local module owns deployment-specific domains, secrets, and routes,
+(see `mosimo-pds`, `happyview`, `mosimo-web` and `mosimo-gov-web`, four independent services from one repository). The local module owns deployment-specific domains, secrets, and routes,
 so hosts never import paths from an external repository directly.
