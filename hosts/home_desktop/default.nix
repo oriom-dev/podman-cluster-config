@@ -15,9 +15,16 @@ in
     ../common
     "${modulesPath}/virtualisation/hyperv-image.nix"
     ../../containers/backup-receiver
+    ../../containers/cluster-dashboard
   ];
 
   virtualisation.hypervGuest.enable = true;
+
+  # Metrics for the dashboard on kagoya-vps (pulled over tailscale0:9925).
+  services.cluster-dashboard.agent = {
+    enable = true;
+    listenTailnet = true;
+  };
   # Built image size; the VHDX is resized to 64 GB on the host and the root
   # partition grows on first boot (boot.growPartition from hyperv-image.nix).
   virtualisation.diskSize = 8 * 1024;
