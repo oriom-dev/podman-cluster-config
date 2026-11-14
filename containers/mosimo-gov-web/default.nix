@@ -9,9 +9,6 @@
     services.mosimo-gov-web = {
       domain = "gov.mosimo.oriom.dev";
       appviewUrl = "https://appview.oriom.dev";
-      # Public HappyView API client key (shipped to browsers), shared with mosimo-web.
-      # Its Allowed origins in HappyView must include https://gov.mosimo.oriom.dev.
-      clientKey = "hvc_c15d9393de6ace328d65633d07d00278";
     };
   };
 }
