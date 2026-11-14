@@ -8,8 +8,6 @@
     services.mosimo-web = {
       domain = "mosimo.oriom.dev";
       appviewUrl = "https://appview.oriom.dev";
-      # Public HappyView API client key (shipped to browsers), registered in HappyView.
-      clientKey = "hvc_c15d9393de6ace328d65633d07d00278";
     };
   };
 }
