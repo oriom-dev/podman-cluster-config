@@ -53,15 +53,6 @@ in
         default = [ "tag:svc" ];
         description = "Tags requested at login; Services can only be hosted by tagged devices.";
       };
-      environmentFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          Optional file with TS_AUTHKEY (or TS_CLIENT_ID/TS_CLIENT_SECRET) for unattended
-          first login. Without it the sidecar waits for an interactive login whose URL is
-          in `journalctl -u podman-cluster-dashboard-ts`; the state then persists.
-        '';
-      };
     };
   };
 
@@ -163,6 +154,16 @@ in
     })
 
     (lib.mkIf (cfg.enable && cfg.tailscale.enable) {
+      # TS_AUTHKEY for the first login only (TS_AUTH_ONCE); the node state then lives in
+      # /var/lib/cluster-dashboard/tailscale. Interactive login is not an option:
+      # containerboot kills `tailscale up` after 60 s and the container restarts.
+      sops.secrets.cluster-dashboard_ts_env = {
+        sopsFile = ./secrets.yaml;
+        format = "yaml";
+        mode = "0400";
+        restartUnits = [ "podman-cluster-dashboard-ts.service" ];
+      };
+
       virtualisation.oci-containers.containers.cluster-dashboard-ts = {
         image = "docker.io/tailscale/tailscale:v1.98.10@sha256:cdf5612ded5be1344f1a704b8c5e53496db97376bb533e5e15f141e48bf60cc0";
         dependsOn = [ "cluster-dashboard" ];
@@ -175,7 +176,7 @@ in
           TS_SERVE_CONFIG = "/config/serve.json";
           TS_EXTRA_ARGS = "--advertise-tags=${lib.concatStringsSep "," cfg.tailscale.tags}";
         };
-        environmentFiles = lib.optional (cfg.tailscale.environmentFile != null) cfg.tailscale.environmentFile;
+        environmentFiles = [ config.sops.secrets.cluster-dashboard_ts_env.path ];
         volumes = [
           "/var/lib/cluster-dashboard/tailscale:/var/lib/tailscale"
           "${serveConfig}:/config:ro"

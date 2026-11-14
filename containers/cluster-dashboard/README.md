@@ -51,17 +51,19 @@ ssh -L 3010:127.0.0.1:3010 kagoya_vps1   # then http://127.0.0.1:3010/
    Make sure no existing rule grants `*` or `tag:host`/`tag:mobile` → `tag:svc`
    beyond this; the sidecar serves nothing on its own device address anyway.
 2. Services → define `svc:dashboard` with port `tcp:80`.
-3. First login of the sidecar (once; state persists in
-   `/var/lib/cluster-dashboard/tailscale`):
+3. First login of the sidecar: Settings → Keys → generate an auth key with tag
+   `tag:svc`, **not** reusable, pre-approved, short expiry. Put it in the secret and
+   deploy:
 
    ```sh
-   ssh kagoya_vps1 sudo journalctl -u podman-cluster-dashboard-ts | grep -o 'https://login.tailscale.com/a/[^ ]*' | tail -1
+   ./bin/secret-edit.sh cluster-dashboard   # TS_AUTHKEY=tskey-auth-...
    ```
 
-   Open the URL as a tailnet admin. The device registers as `cluster-dashboard`
-   with `tag:svc` (tagged devices do not expire). Alternatively set
-   `services.cluster-dashboard.tailscale.environmentFile` to a sops env file with
-   `TS_AUTHKEY=` for unattended login.
+   It is used only while the node is logged out (`TS_AUTH_ONCE`); the node state
+   then persists in `/var/lib/cluster-dashboard/tailscale` and tagged devices do not
+   expire, so the spent key can stay. If that directory is lost, issue a new key.
+   Interactive login does not work: containerboot kills `tailscale up` after 60 s
+   and the container restarts with a new login URL.
 
 Then open `http://dashboard.<tailnet>.ts.net/` from a `tag:host` or `tag:mobile`
 device.
