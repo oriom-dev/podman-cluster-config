@@ -62,11 +62,11 @@
     "mosimo": {
       "flake": false,
       "locked": {
-        "lastModified": 1794650962,
-        "narHash": "sha256-cs5jLi/bq6SQyEpnrhetIyd38yB7WiInH8kCiHdbfng=",
+        "lastModified": 1794652180,
+        "narHash": "sha256-+P36q8xy2SBh3ZWRtDHD+hhpPSk3STFwDTrK1HyNahg=",
         "owner": "jphacks",
         "repo": "sd_2607",
-        "rev": "d38051e7cd6db6b3f893de2cbf2cc1f2ec1a433c",
+        "rev": "0ac7eef73d0ca26d8c402c6f8f1050c929ea2676",
         "type": "github"
       },
       "original": {
