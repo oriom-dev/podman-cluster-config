@@ -10,10 +10,10 @@ the node's remaining capacity. One hour of history is kept in memory.
  kagoya-vps ┌─ netns of container cluster-dashboard ──────────────────────────────────────┐
             │  cluster-dashboard-ts (userspace tailscaled, tag:svc) ─→ 127.0.0.1:8080       │
             │  cluster-dashboard (server.py, UI, 1 h history)                              │
-            └──────────── /run/cluster-dashboard-agent/agent.sock (ro, group-only) ──────────┘
-            cluster-dashboard-agent (native, root, read-only, collector)
+            └──────────── /run/cluster-agent/agent.sock (ro, group-only) ────────────────┘
+            cluster-agent (native, root, read-only, collector)
                 │  pulls /v1/node over Headscale tailscale0 (ACL: tag:ingress → tag:worker:9925)
- home-desktop   ▼  cluster-dashboard-agent (native, listens on tailscale0:9925 only)
+ home-desktop   ▼  cluster-agent (native, listens on tailscale0:9925 only)
 ```
 
 | Part | Where | Notes |

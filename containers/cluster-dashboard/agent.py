@@ -463,7 +463,7 @@ def cluster_snapshot() -> dict:
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
-    server_version = "cluster-dashboard-agent"
+    server_version = "cluster-agent"
 
     def do_GET(self) -> None:  # noqa: N802
         try:

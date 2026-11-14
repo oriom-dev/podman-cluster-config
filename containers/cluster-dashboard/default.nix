@@ -1,7 +1,7 @@
 # Cluster resource dashboard (see README.md).
 #
 # - agent (every node, native): read-only metrics of the node, its Podman containers
-#   and native services. Socket-activated on /run/cluster-dashboard-agent/agent.sock; with
+#   and native services. Socket-activated on /run/cluster-agent/agent.sock; with
 #   `agent.listenTailnet` also on tailscale0:9925 so the collector can pull it. The
 #   Headscale ACL lets only tag:ingress reach that port.
 # - dashboard (one node): the local agent also collects every tailnet peer, and a
@@ -17,7 +17,9 @@ let
   uiPort = 3010;
   # Not /run/cluster-dashboard: oci-containers owns that as the container's RuntimeDirectory
   # and systemd recreates it (deleting the socket) whenever the container restarts.
-  socketDir = "/run/cluster-dashboard-agent";
+  # switch-to-configuration never restarts a changed .socket unit, so moving the socket
+  # also needs a new unit name (cluster-agent replaced cluster-dashboard-agent).
+  socketDir = "/run/cluster-agent";
   gid = 29925; # shared by the agent socket and the dashboard container's user
   podman = config.virtualisation.podman.package;
 
@@ -77,7 +79,7 @@ in
     (lib.mkIf cfg.agent.enable {
       users.groups.cluster-dashboard.gid = gid;
 
-      systemd.sockets.cluster-dashboard-agent = {
+      systemd.sockets.cluster-agent = {
         description = "Cluster dashboard metrics agent socket";
         wantedBy = [ "sockets.target" ];
         listenStreams = [ "${socketDir}/agent.sock" ]
@@ -89,10 +91,10 @@ in
         };
       };
 
-      systemd.services.cluster-dashboard-agent = {
+      systemd.services.cluster-agent = {
         description = "Cluster dashboard metrics agent";
-        requires = [ "cluster-dashboard-agent.socket" ];
-        after = [ "cluster-dashboard-agent.socket" ];
+        requires = [ "cluster-agent.socket" ];
+        after = [ "cluster-agent.socket" ];
         # podman, tailscale, du, systemctl and nixos-version, all read-only uses.
         path = [ podman pkgs.coreutils config.systemd.package config.services.tailscale.package "/run/current-system/sw" ];
         environment = {
@@ -161,8 +163,8 @@ in
       };
 
       systemd.services.podman-cluster-dashboard = {
-        requires = [ "cluster-dashboard-agent.socket" ];
-        after = [ "cluster-dashboard-agent.socket" ];
+        requires = [ "cluster-agent.socket" ];
+        after = [ "cluster-agent.socket" ];
       };
     })
 

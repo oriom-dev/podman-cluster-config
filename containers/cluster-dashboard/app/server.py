@@ -20,7 +20,7 @@ import threading
 import time
 from pathlib import Path
 
-AGENT_SOCKET = os.environ.get("DASHBOARD_AGENT_SOCKET", "/run/cluster-dashboard-agent/agent.sock")
+AGENT_SOCKET = os.environ.get("DASHBOARD_AGENT_SOCKET", "/run/cluster-agent/agent.sock")
 LISTEN = os.environ.get("DASHBOARD_LISTEN", "0.0.0.0:8080")
 INTERVAL = float(os.environ.get("DASHBOARD_INTERVAL", "10"))
 HISTORY = int(os.environ.get("DASHBOARD_HISTORY", "360"))
