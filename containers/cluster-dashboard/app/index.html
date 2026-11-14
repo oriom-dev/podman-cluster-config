@@ -1,165 +1,206 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cluster dashboard</title>
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#050505">
+<title>Cluster monitor</title>
 <style>
 :root {
-  color-scheme: light;
-  --surface-0: #f4f4f2;
-  --surface-1: #fcfcfb;
-  --surface-2: #efeeeb;
-  --border: #e0dfdb;
-  --text-primary: #0b0b0b;
-  --text-secondary: #52514e;
-  --text-muted: #77766f;
-  --accent: #2a78d6;
-  --accent-track: #cde2fb;
-  --series-rx: #2a78d6;
-  --series-tx: #eb6834;
-  --good: #0ca30c;
-  --warning: #fab219;
-  --critical: #d03b3b;
-  --warning-ink: #8a5a00;
-  --critical-ink: #b02a2a;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --surface-0: #121211;
-    --surface-1: #1a1a19;
-    --surface-2: #242422;
-    --border: #33332f;
-    --text-primary: #f0efec;
-    --text-secondary: #c3c2b7;
-    --text-muted: #8f8e86;
-    --accent: #3987e5;
-    --accent-track: #1c3556;
-    --series-rx: #3987e5;
-    --series-tx: #d95926;
-    --warning-ink: #fab219;
-    --critical-ink: #e66767;
-  }
-}
-:root[data-theme="dark"] {
+  --bg: #050505;
+  --panel: #0a0907;
+  --line: #3b2a12;
+  --line-hi: #6b4a1a;
+  --amber: #ff9a1f;
+  --amber-hi: #ffc266;
+  --amber-dim: #a8701f;
+  --amber-faint: #2a1d0b;
+  --text: #f4e3c6;
+  --muted: #9a8466;
+  --rx: #ff9a1f;
+  --tx: #35d6ff;
+  --ok: #3dff8a;
+  --warn: #ffd21f;
+  --crit: #ff3b3b;
+  --mono: ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, "Noto Sans Mono CJK JP", monospace;
   color-scheme: dark;
-  --surface-0: #121211;
-  --surface-1: #1a1a19;
-  --surface-2: #242422;
-  --border: #33332f;
-  --text-primary: #f0efec;
-  --text-secondary: #c3c2b7;
-  --text-muted: #8f8e86;
-  --accent: #3987e5;
-  --accent-track: #1c3556;
-  --series-rx: #3987e5;
-  --series-tx: #d95926;
-  --warning-ink: #fab219;
-  --critical-ink: #e66767;
 }
 * { box-sizing: border-box; }
+html { background: var(--bg); }
 body {
   margin: 0;
-  background: var(--surface-0);
-  color: var(--text-primary);
-  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.4 var(--mono);
   font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
 }
-main { max-width: 1400px; margin: 0 auto; padding: 16px; }
-header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; margin-bottom: 16px; }
-h1 { font-size: 20px; margin: 0; font-weight: 650; }
-h2 { font-size: 16px; margin: 28px 0 10px; font-weight: 650; }
-.muted { color: var(--text-muted); }
-.secondary { color: var(--text-secondary); }
-.status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); }
-.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
-.dot.good { background: var(--good); }
-.dot.warning { background: var(--warning); }
-.dot.critical { background: var(--critical); }
-.dot.off { background: var(--text-muted); }
-.banner { background: var(--surface-1); border: 1px solid var(--critical); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; color: var(--critical-ink); }
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 12px; }
-.tile, .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
-.tile .label { color: var(--text-secondary); font-size: 13px; }
-.tile .value { font-size: 24px; font-weight: 650; margin-top: 2px; }
-.tile .sub { color: var(--text-muted); font-size: 12px; }
-.nodes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 12px; }
-.card h3 { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.tag { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--surface-2); color: var(--text-secondary); font-weight: 500; }
-.meta { font-size: 12px; color: var(--text-muted); margin: 4px 0 10px; overflow-wrap: anywhere; }
-.metric { margin: 10px 0; }
-.metric .row { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
-.metric .row .name { color: var(--text-secondary); overflow-wrap: anywhere; }
-.metric .row .val { white-space: nowrap; }
-.meter { height: 8px; border-radius: 4px; background: var(--accent-track); margin-top: 4px; overflow: hidden; }
-.meter > span { display: block; height: 100%; border-radius: 4px; background: var(--accent); }
-.meter.warning > span { background: var(--warning); }
-.meter.critical > span { background: var(--critical); }
-.meter.small { height: 4px; margin-top: 3px; min-width: 60px; }
-.flag { font-size: 12px; font-weight: 600; white-space: nowrap; }
-.flag.warning { color: var(--warning-ink); }
-.flag.critical { color: var(--critical-ink); }
-.spark { display: block; width: 100%; height: 36px; margin-top: 4px; overflow: visible; }
-.spark.small { width: 96px; height: 22px; margin: 0; }
-.spark path.line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.spark path.area { opacity: .12; }
-.legend { display: inline-flex; gap: 10px; font-size: 12px; color: var(--text-secondary); }
-.legend i { display: inline-block; width: 10px; height: 2px; vertical-align: middle; margin-right: 4px; }
-.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
-select, button { font: inherit; color: var(--text-primary); background: var(--surface-1); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; }
-button { cursor: pointer; }
-.table-wrap { overflow-x: auto; background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; }
-table { border-collapse: collapse; width: 100%; font-size: 13px; }
-th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
-tr:last-child td { border-bottom: none; }
-th { font-weight: 600; color: var(--text-secondary); white-space: nowrap; background: var(--surface-1); position: sticky; top: 0; }
+/* faint scanlines over everything */
+body::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 20;
+  background: repeating-linear-gradient(0deg, rgb(255 154 31 / .025) 0 1px, transparent 1px 3px);
+}
+main { max-width: 1480px; margin: 0 auto; padding: 0 16px 32px; }
+
+/* ------------------------------------------------------------ top bar */
+.bar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 10px 16px; margin: 0 -16px 16px;
+  background: rgb(5 5 5 / .94);
+  border-bottom: 1px solid var(--line-hi);
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .28em; color: var(--amber); font-size: 15px; }
+.hex { width: 18px; height: 20px; background: var(--amber); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+.brand .sl { color: var(--amber-dim); letter-spacing: 0; }
+.code { font-weight: 700; letter-spacing: .2em; padding: 2px 10px; border: 1px solid currentColor; }
+.code.ok { color: var(--ok); }
+.code.warn { color: var(--warn); }
+.code.crit { color: var(--crit); }
+.code.idle { color: var(--muted); }
+.code .blink { display: inline-block; width: 8px; height: 8px; background: currentColor; margin-right: 8px; vertical-align: 1px; animation: blink 1.2s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .code .blink { animation: none; } }
+.spacer { flex: 1; }
+.clock { color: var(--amber-dim); }
+.clock b { color: var(--amber-hi); font-weight: 600; }
+
+/* ------------------------------------------------------------ alerts */
+.alert {
+  display: flex; align-items: stretch; margin-bottom: 16px; border: 1px solid var(--crit); color: var(--crit);
+}
+.alert .stripe { width: 56px; flex: none; background: repeating-linear-gradient(-45deg, var(--crit) 0 8px, transparent 8px 16px); }
+.alert .msg { padding: 6px 12px; display: grid; gap: 2px; }
+.alert .msg b { letter-spacing: .3em; }
+
+/* ------------------------------------------------------------ sections */
+h2 {
+  display: flex; align-items: center; gap: 12px; margin: 28px 0 10px;
+  font-size: 13px; font-weight: 700; letter-spacing: .3em; color: var(--amber);
+}
+h2 .idx { color: var(--bg); background: var(--amber); padding: 0 6px; letter-spacing: .1em; }
+h2::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-hi), transparent); }
+h2 .ctl { order: 3; display: flex; gap: 6px; font-weight: 400; letter-spacing: .1em; }
+
+.panel { position: relative; background: var(--panel); border: 1px solid var(--line); }
+.panel::before, .panel::after {
+  content: ""; position: absolute; width: 10px; height: 10px; border-color: var(--amber); border-style: solid; pointer-events: none;
+}
+.panel::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+.panel::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+/* ------------------------------------------------------------ summary */
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px; }
+.stat { padding: 10px 14px 12px; }
+.stat .k { color: var(--muted); letter-spacing: .25em; font-size: 11px; }
+.stat .v { font-size: 30px; font-weight: 700; color: var(--amber-hi); line-height: 1.15; }
+.stat .v small { font-size: 14px; color: var(--amber-dim); font-weight: 400; }
+
+/* ------------------------------------------------------------ meters */
+.seg {
+  --n: 24;
+  position: relative; height: 10px; background: var(--amber-faint);
+  /* the mask cuts track and fill into the same fixed segments */
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 calc(100% / var(--n) - 2px), transparent calc(100% / var(--n) - 2px) calc(100% / var(--n)));
+          mask: repeating-linear-gradient(90deg, #000 0 calc(100% / var(--n) - 2px), transparent calc(100% / var(--n) - 2px) calc(100% / var(--n)));
+}
+.seg > i { position: absolute; inset: 0 auto 0 0; display: block; background: var(--amber); }
+.seg.warn > i { background: var(--warn); }
+.seg.crit > i { background: var(--crit); }
+.seg.thin { --n: 16; height: 4px; margin-top: 3px; }
+.warn-t { color: var(--warn); }
+.crit-t { color: var(--crit); }
+
+/* ------------------------------------------------------------ nodes */
+.nodes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 12px; }
+.node { padding: 12px 14px 14px; }
+.node.down { border-color: #4a1515; }
+.node.down::before, .node.down::after { border-color: var(--crit); }
+.node.off { opacity: .6; }
+.node.off::before, .node.off::after { border-color: var(--muted); }
+.node-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.node-head .name { font-size: 18px; font-weight: 700; color: var(--amber-hi); letter-spacing: .08em; }
+.node-head .code { margin-left: auto; font-size: 11px; padding: 0 6px; }
+.tag { font-size: 11px; color: var(--amber-dim); border: 1px solid var(--line-hi); padding: 0 5px; }
+.kv { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 6px 0 10px; color: var(--muted); font-size: 12px; }
+.kv b { color: var(--text); font-weight: 400; }
+.rows { display: grid; grid-template-columns: max-content 1fr auto; gap: 8px 10px; align-items: center; }
+.rows .l { color: var(--amber-dim); letter-spacing: .15em; font-size: 11px; }
+.rows .r { text-align: right; white-space: nowrap; }
+.rows .r small { color: var(--muted); }
+.rows .full { grid-column: 2 / 4; }
+.err { color: var(--crit); margin-top: 6px; overflow-wrap: anywhere; }
+.ifaces { display: grid; grid-template-columns: auto 1fr 1fr; gap: 0 12px; font-size: 12px; color: var(--muted); }
+.ifaces span:nth-child(3n+2), .ifaces span:nth-child(3n) { text-align: right; color: var(--text); }
+
+/* ------------------------------------------------------------ sparklines */
+.spark { display: block; width: 100%; height: 34px; overflow: visible;
+  background: repeating-linear-gradient(0deg, transparent 0 16px, var(--amber-faint) 16px 17px); }
+.spark.small { width: 110px; height: 20px; background: none; border-bottom: 1px solid var(--line); }
+.spark path.line { fill: none; stroke-width: 1.5; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.spark path.area { opacity: .14; }
+.dash { color: var(--line-hi); }
+
+/* ------------------------------------------------------------ controls */
+.btn {
+  font: inherit; font-size: 11px; letter-spacing: .15em; color: var(--amber-dim); background: transparent;
+  border: 1px solid var(--line-hi); padding: 2px 8px; cursor: pointer; text-transform: uppercase;
+}
+.btn:hover { color: var(--amber-hi); border-color: var(--amber); }
+.btn[aria-pressed="true"] { color: var(--bg); background: var(--amber); border-color: var(--amber); }
+
+/* ------------------------------------------------------------ tables */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--amber-faint); vertical-align: middle; white-space: nowrap; }
+tbody tr:hover td { background: #120d05; }
+th { font-size: 11px; font-weight: 400; color: var(--amber-dim); letter-spacing: .2em; border-bottom: 1px solid var(--line-hi); }
 th[data-sort] { cursor: pointer; user-select: none; }
-th[data-sort]:hover { color: var(--text-primary); }
-th .arrow { color: var(--text-muted); font-size: 11px; }
-td.num, th.num { text-align: right; white-space: nowrap; }
-td .sub { display: block; color: var(--text-muted); font-size: 12px; overflow-wrap: anywhere; }
-td.name { min-width: 160px; max-width: 260px; }
-td.nowrap { white-space: nowrap; }
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
-#tooltip { position: fixed; pointer-events: none; z-index: 10; background: var(--surface-2); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 12px; white-space: nowrap; display: none; box-shadow: 0 2px 8px rgb(0 0 0 / .15); }
-footer { margin: 28px 0 8px; font-size: 12px; color: var(--text-muted); }
+th[data-sort]:hover { color: var(--amber-hi); }
+th.on { color: var(--amber); }
+th .arrow { font-size: 9px; }
+.num { text-align: right; }
+td.name { color: var(--amber-hi); }
+td .dim, .dim { color: var(--muted); }
+.st { display: inline-flex; align-items: center; gap: 6px; letter-spacing: .12em; font-size: 11px; }
+.st::before { content: ""; width: 7px; height: 7px; background: currentColor; }
+.st.ok { color: var(--ok); }
+.st.off { color: var(--muted); }
+.st.crit { color: var(--crit); }
+.st.warn { color: var(--warn); }
+.cell-meter { min-width: 104px; }
+.empty { color: var(--muted); letter-spacing: .3em; text-align: center; padding: 14px; }
+
+#tooltip {
+  position: fixed; pointer-events: none; z-index: 30; display: none;
+  background: var(--bg); color: var(--amber-hi); border: 1px solid var(--amber); padding: 3px 8px; font-size: 12px; white-space: nowrap;
+}
 </style>
 </head>
 <body>
 <main>
-  <header>
-    <h1>Cluster dashboard</h1>
-    <span class="status" id="status"><span class="dot off"></span>読み込み中</span>
-    <span class="muted" id="collector"></span>
-    <span style="flex:1"></span>
-    <button type="button" id="theme" aria-label="テーマ切り替え">テーマ: 自動</button>
+  <header class="bar">
+    <div class="brand"><span class="hex"></span>CLUSTER<span class="sl">//</span>MONITOR</div>
+    <span class="code idle" id="code"><span class="blink"></span>INIT</span>
+    <span class="spacer"></span>
+    <span class="clock" id="clock"></span>
   </header>
-  <div id="banner"></div>
-  <section class="tiles" id="tiles" aria-label="概要"></section>
+  <div id="alert"></div>
 
-  <h2>ノード</h2>
+  <section class="summary" id="summary" aria-label="Summary"></section>
+
+  <h2><span class="idx">01</span>NODES</h2>
   <section class="nodes" id="nodes"></section>
 
-  <h2>コンテナ</h2>
-  <div class="toolbar">
-    <label>ノード <select id="node-filter"><option value="">すべて</option></select></label>
-    <label><input type="checkbox" id="show-stopped"> 停止中も表示</label>
-  </div>
-  <div class="table-wrap"><table id="containers"></table></div>
+  <h2><span class="idx">02</span>CONTAINERS<span class="ctl" id="container-ctl"></span></h2>
+  <div class="panel table-wrap"><table id="containers"></table></div>
 
-  <h2>ネイティブサービス</h2>
-  <div class="toolbar">
-    <label><input type="checkbox" id="show-small"> 16 MiB 未満も表示</label>
-  </div>
-  <div class="table-wrap"><table id="services"></table></div>
+  <h2><span class="idx">03</span>SERVICES<span class="ctl" id="service-ctl"></span></h2>
+  <div class="panel table-wrap"><table id="services"></table></div>
 
-  <h2>Tailnet（クラスタ内部）</h2>
-  <div class="table-wrap"><table id="tailnet"></table></div>
-
-  <footer>
-    レートは直近 2 サンプルの差分、グラフは直近 1 時間（10 秒間隔）。ストレージ（書き込み層・ボリューム・StateDirectory）は約 10 分ごとに計測します。
-  </footer>
+  <h2><span class="idx">04</span>TAILNET</h2>
+  <div class="panel table-wrap"><table id="tailnet"></table></div>
 </main>
 <div id="tooltip" role="tooltip"></div>
 <script>
@@ -167,43 +208,41 @@ footer { margin: 28px 0 8px; font-size: 12px; color: var(--text-muted); }
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 let state = null;
-const prefs = { sort: { containers: ["memory", -1], services: ["memory", -1] } };
-try { Object.assign(prefs, JSON.parse(localStorage.getItem("dashboard-prefs") || "{}")); } catch (_) {}
-const savePrefs = () => { try { localStorage.setItem("dashboard-prefs", JSON.stringify(prefs)); } catch (_) {} };
+const prefs = { sort: { containers: ["memory", -1], services: ["memory", -1], tailnet: ["name", 1] }, node: "", stopped: false, small: false };
+try { Object.assign(prefs, JSON.parse(localStorage.getItem("cluster-monitor") || "{}")); } catch (_) {}
+const savePrefs = () => { try { localStorage.setItem("cluster-monitor", JSON.stringify(prefs)); } catch (_) {} };
 
 // ---------------------------------------------------------------- formatting
-function bytes(n, digits = 1) {
-  if (n == null || !isFinite(n)) return "—";
-  const units = ["B", "KiB", "MiB", "GiB", "TiB"];
+const DASH = '<span class="dash">--</span>';
+function size(n) {
+  if (n == null || !isFinite(n)) return null;
+  const units = ["B", "K", "M", "G", "T"];
   let i = 0;
   while (Math.abs(n) >= 1024 && i < units.length - 1) { n /= 1024; i++; }
-  return (i === 0 ? Math.round(n) : n.toFixed(n >= 100 ? 0 : digits)) + " " + units[i];
+  return (i === 0 ? Math.round(n) : n.toFixed(n >= 100 ? 0 : n >= 10 ? 1 : 2)) + units[i];
 }
-const rate = (n) => n == null ? "—" : bytes(n) + "/s";
-const pct = (n) => n == null || !isFinite(n) ? "—" : (n >= 10 ? n.toFixed(0) : n.toFixed(1)) + "%";
-const cores = (n) => n == null ? "—" : (n >= 1 ? n.toFixed(2) : n.toFixed(3)) + " コア";
-function duration(sec) {
-  if (sec == null) return "—";
+const bytes = (n) => size(n) ?? DASH;
+const rate = (n) => n == null ? DASH : size(n) + "/s";
+const pct = (n) => n == null || !isFinite(n) ? DASH : (n >= 10 ? n.toFixed(0) : n.toFixed(1)) + "%";
+const cores = (n) => n == null ? DASH : n >= 1 ? n.toFixed(2) : n.toFixed(3);
+function uptime(sec) {
+  if (sec == null) return "--";
   const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60);
-  return d ? `${d}日${h}時間` : h ? `${h}時間${m}分` : `${m}分`;
+  return d ? `${d}d${String(h).padStart(2, "0")}h` : `${h}h${String(m).padStart(2, "0")}m`;
 }
-function ago(ts) {
-  if (!ts) return "—";
+function since(ts) {
+  if (!ts) return "--";
   const t = typeof ts === "number" ? ts * 1000 : Date.parse(ts);
-  if (!isFinite(t) || t <= 0) return "—";
-  return duration(Math.max(0, (Date.now() - t) / 1000)) + "前";
+  if (!isFinite(t) || t <= 0) return "--";
+  return uptime(Math.max(0, (Date.now() - t) / 1000)) + " ago";
 }
-const time = (ts) => ts ? new Date(ts * 1000).toLocaleTimeString("ja-JP") : "—";
-
-function level(p) { return p == null ? "" : p >= 90 ? "critical" : p >= 80 ? "warning" : ""; }
-function flag(p) {
-  const l = level(p);
-  return l === "critical" ? '<span class="flag critical">▲ 逼迫</span>' : l === "warning" ? '<span class="flag warning">▲ 残り少</span>' : "";
-}
-function meter(p, small = false) {
+const utc = (d) => d.toISOString().slice(11, 19);
+const level = (p) => p == null ? "" : p >= 90 ? "crit" : p >= 80 ? "warn" : "";
+function seg(p, thin = false) {
   const w = p == null ? 0 : Math.max(0, Math.min(100, p));
-  return `<div class="meter ${small ? "small" : ""} ${level(p)}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${w.toFixed(0)}"><span style="width:${w}%"></span></div>`;
+  return `<div class="seg ${thin ? "thin" : ""} ${level(p)}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${w.toFixed(0)}"><i style="width:${w}%"></i></div>`;
 }
+const lv = (p, text) => level(p) ? `<span class="${level(p)}-t">${text}</span>` : text;
 
 // ---------------------------------------------------------------- sparklines
 const sparkData = new Map();
@@ -212,11 +251,10 @@ function spark(series, opts = {}) {
   const id = "s" + (sparkId++);
   const { small = false, fmt = String, max = null, label = "" } = opts;
   const lines = series.filter((s) => s.values && s.values.some((v) => v != null));
-  if (!lines.length) return small ? '<span class="muted">—</span>' : "";
-  const W = 300, H = small ? 22 : 36;
-  const n = Math.max(...lines.map((s) => s.values.length));
+  if (!lines.length) return small ? DASH : "";
+  const W = 300, H = small ? 20 : 34, cap = 360;
   const top = max ?? Math.max(1e-9, ...lines.flatMap((s) => s.values.filter((v) => v != null)));
-  const x = (i, len) => W - (len - 1 - i) * (W / Math.max(1, (opts.capacity || 360) - 1));
+  const x = (i, len) => W - (len - 1 - i) * (W / (cap - 1));
   const y = (v) => H - 1 - (Math.min(v, top) / top) * (H - 2);
   let paths = "";
   for (const s of lines) {
@@ -226,92 +264,89 @@ function spark(series, opts = {}) {
       d += (pen ? "L" : "M") + x(i, s.values.length).toFixed(1) + " " + y(v).toFixed(1);
       pen = true;
     });
-    if (lines.length === 1 && !small) {
+    if (lines.length === 1) {
       const first = s.values.findIndex((v) => v != null);
       paths += `<path class="area" fill="${s.color}" d="${d} L${W} ${H} L${x(first, s.values.length).toFixed(1)} ${H} Z"/>`;
     }
     paths += `<path class="line" stroke="${s.color}" d="${d}"/>`;
   }
-  sparkData.set(id, { lines, fmt, n, W, capacity: opts.capacity || 360, label });
-  return `<svg class="spark ${small ? "small" : ""}" data-spark="${id}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${esc(label)} の推移">${paths}<circle r="0" fill="var(--text-primary)"/></svg>`;
+  sparkData.set(id, { lines, fmt });
+  return `<svg class="spark ${small ? "small" : ""}" data-spark="${id}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${esc(label)}">${paths}</svg>`;
 }
 document.addEventListener("pointermove", (e) => {
   const tip = $("tooltip");
   const svg = e.target.closest && e.target.closest("svg[data-spark]");
-  if (!svg) { tip.style.display = "none"; return; }
-  const d = sparkData.get(svg.dataset.spark);
-  if (!d) return;
+  const d = svg && sparkData.get(svg.dataset.spark);
+  if (!d) { tip.style.display = "none"; return; }
   const r = svg.getBoundingClientRect();
-  const slotsFromEnd = Math.round((1 - (e.clientX - r.left) / r.width) * (d.capacity - 1));
-  const parts = [];
-  for (const s of d.lines) {
-    const i = s.values.length - 1 - slotsFromEnd;
-    const v = i >= 0 ? s.values[i] : null;
-    parts.push(`${s.name ? esc(s.name) + " " : ""}${v == null ? "—" : esc(d.fmt(v))}`);
-  }
-  const secs = slotsFromEnd * (state?.interval || 10);
-  tip.innerHTML = `<span class="muted">${secs ? duration(secs) + "前" : "最新"}</span> · ${parts.join(" / ")}`;
+  const back = Math.round((1 - (e.clientX - r.left) / r.width) * 359);
+  const parts = d.lines.map((s) => {
+    const v = s.values[s.values.length - 1 - back];
+    return `${s.name ? s.name + " " : ""}${v == null ? "--" : d.fmt(v)}`;
+  });
+  tip.textContent = `T-${uptime(back * (state?.interval || 10))}  ${parts.join("  ")}`;
   tip.style.display = "block";
   tip.style.left = Math.min(window.innerWidth - tip.offsetWidth - 8, e.clientX + 12) + "px";
   tip.style.top = (e.clientY + 14) + "px";
 });
 
 // ---------------------------------------------------------------- rendering
-function nodeState(n) {
-  if (n.ok) return ["good", "稼働中"];
-  if (n.tailnet && !n.tailnet.online) return ["off", "オフライン"];
-  return ["critical", "エージェント応答なし"];
+function nodeCode(n) {
+  if (n.ok) return ["ok", "ONLINE"];
+  if (n.tailnet && !n.tailnet.online) return ["off", "OFFLINE"];
+  return ["crit", "NO AGENT"];
 }
 
-function renderTiles(nodes) {
+function renderSummary(nodes) {
   const live = nodes.filter((n) => n.ok);
-  const containers = live.flatMap((n) => n.containers || []);
-  const running = containers.filter((c) => c.state === "running").length;
-  const memTotal = live.reduce((a, n) => a + n.memory.total, 0);
-  const memUsed = live.reduce((a, n) => a + n.memory.used, 0);
+  const cs = live.flatMap((n) => n.containers || []);
+  const running = cs.filter((c) => c.state === "running").length;
+  const memT = live.reduce((a, n) => a + n.memory.total, 0), memU = live.reduce((a, n) => a + n.memory.used, 0);
   const fs = live.flatMap((n) => n.filesystems || []);
-  const diskTotal = fs.reduce((a, f) => a + f.total, 0);
-  const diskUsed = fs.reduce((a, f) => a + f.used, 0);
-  const memP = memTotal ? 100 * memUsed / memTotal : null;
-  const diskP = diskTotal ? 100 * diskUsed / diskTotal : null;
-  $("tiles").innerHTML = `
-    <div class="tile"><div class="label">稼働ノード</div><div class="value">${live.length} / ${nodes.length}</div><div class="sub">エージェントが応答したノード / tailnet 上のノード</div></div>
-    <div class="tile"><div class="label">実行中コンテナ</div><div class="value">${running} / ${containers.length}</div><div class="sub">停止中 ${containers.length - running}</div></div>
-    <div class="tile"><div class="label">メモリ（全ノード）</div><div class="value">${pct(memP)}</div><div class="sub">${bytes(memUsed)} / ${bytes(memTotal)} · 空き ${bytes(memTotal - memUsed)} ${flag(memP)}</div>${meter(memP)}</div>
-    <div class="tile"><div class="label">ストレージ（全ノード）</div><div class="value">${pct(diskP)}</div><div class="sub">${bytes(diskUsed)} / ${bytes(diskTotal)} · 空き ${bytes(diskTotal - diskUsed)} ${flag(diskP)}</div>${meter(diskP)}</div>`;
+  const dT = fs.reduce((a, f) => a + f.total, 0), dU = fs.reduce((a, f) => a + f.used, 0);
+  const memP = memT ? 100 * memU / memT : null, diskP = dT ? 100 * dU / dT : null;
+  const stat = (k, v, extra = "") => `<div class="panel stat"><div class="k">${k}</div><div class="v">${v}</div>${extra}</div>`;
+  $("summary").innerHTML =
+    stat("NODES", `${live.length}<small>/${nodes.length}</small>`) +
+    stat("CONTAINERS", `${running}<small>/${cs.length}</small>`) +
+    stat("MEMORY", `${lv(memP, pct(memP))}<small> ${size(memU)}/${size(memT)}</small>`, seg(memP)) +
+    stat("STORAGE", `${lv(diskP, pct(diskP))}<small> ${size(dU)}/${size(dT)}</small>`, seg(diskP));
 }
 
 function renderNodes(nodes) {
   $("nodes").innerHTML = nodes.map((n) => {
-    const [cls, label] = nodeState(n);
-    const tags = (n.tailnet?.tags || []).map((t) => `<span class="tag">${esc(t)}</span>`).join("");
-    const head = `<h3><span class="dot ${cls}"></span>${esc(n.name)} ${tags}</h3>`;
+    const [cls, code] = nodeCode(n);
+    const tags = (n.tailnet?.tags || []).map((t) => `<span class="tag">${esc(t.replace(/^tag:/, ""))}</span>`).join("");
+    const head = `<div class="node-head"><span class="name">${esc(n.name)}</span>${tags}<span class="code ${cls}">${code}</span></div>`;
     if (!n.ok) {
-      return `<article class="card">${head}<div class="meta">${esc(label)} · ${esc(n.address || "")}${n.tailnet?.last_seen ? " · 最終確認 " + ago(n.tailnet.last_seen) : ""}</div><div class="secondary">${esc(n.error || "")}</div></article>`;
+      return `<article class="panel node ${cls === "off" ? "off" : "down"}">${head}
+        <div class="kv"><span>${esc(n.address || "--")}</span>${n.tailnet?.last_seen ? `<span>SEEN <b>${since(n.tailnet.last_seen)}</b></span>` : ""}</div>
+        <div class="err">${esc(n.error || "")}</div></article>`;
     }
     const s = n.system, m = n.memory;
     const memP = 100 * m.used / m.total;
-    const swapUsed = m.swap_total - m.swap_free;
-    const swapP = m.swap_total ? 100 * swapUsed / m.swap_total : null;
+    const swapU = m.swap_total - m.swap_free, swapP = m.swap_total ? 100 * swapU / m.swap_total : null;
     const running = (n.containers || []).filter((c) => c.state === "running").length;
-    const fs = (n.filesystems || []).map((f) => {
+    const row = (l, p, r, extra = "") => `<span class="l">${l}</span>${seg(p)}<span class="r">${r}</span>${extra}`;
+    const disks = (n.filesystems || []).map((f) => {
       const p = 100 * f.used / f.total;
-      return `<div class="metric"><div class="row"><span class="name">ディスク ${esc(f.mount)}</span><span class="val">${bytes(f.used)} / ${bytes(f.total)} · 空き ${bytes(f.available)} ${flag(p)}</span></div>${meter(p)}</div>`;
+      return row(esc(f.mount === "/" ? "/" : f.mount), p, `${lv(p, size(f.used))}<small>/${size(f.total)}</small>`);
     }).join("");
-    const ifaces = (n.interfaces || []).map((i) => `<div class="row"><span class="name mono">${esc(i.name)}</span><span class="val">↓ ${rate(i.rx_rate)} · ↑ ${rate(i.tx_rate)}</span></div>`).join("");
-    const errors = (n.errors || []).map((e) => `<div class="flag critical">${esc(e)}</div>`).join("");
-    return `<article class="card">${head}
-      <div class="meta">${esc(n.address || "")} · 稼働 ${duration(s.uptime)} · ${s.cpus} CPU · load ${s.load.map((l) => l.toFixed(2)).join(" ")} · コンテナ ${running} 実行中${s.revision ? ` · rev <span class="mono">${esc(s.revision.slice(0, 7))}</span>` : ""}</div>
-      ${errors}
-      <div class="metric"><div class="row"><span class="name">CPU</span><span class="val">${pct(n.cpu.percent)} ${flag(n.cpu.percent)}</span></div>${meter(n.cpu.percent)}
-        ${spark([{ values: n.cpu.history, color: "var(--accent)" }], { fmt: pct, max: 100, label: "CPU" })}</div>
-      <div class="metric"><div class="row"><span class="name">メモリ</span><span class="val">${bytes(m.used)} / ${bytes(m.total)} · 空き ${bytes(m.available)} ${flag(memP)}</span></div>${meter(memP)}
-        ${spark([{ values: n.memory.history, color: "var(--accent)" }], { fmt: pct, max: 100, label: "メモリ" })}</div>
-      ${m.swap_total ? `<div class="metric"><div class="row"><span class="name">スワップ</span><span class="val">${bytes(swapUsed)} / ${bytes(m.swap_total)} ${flag(swapP)}</span></div>${meter(swapP)}</div>` : ""}
-      ${fs}
-      <div class="metric"><div class="row"><span class="name">ネットワーク（合計）</span><span class="legend"><span><i style="background:var(--series-rx)"></i>↓ 受信 ${rate(n.network.rx_rate)}</span><span><i style="background:var(--series-tx)"></i>↑ 送信 ${rate(n.network.tx_rate)}</span></span></div>
-        ${spark([{ name: "↓", values: n.network.rx_history, color: "var(--series-rx)" }, { name: "↑", values: n.network.tx_history, color: "var(--series-tx)" }], { fmt: rate, label: "ネットワーク" })}
-        ${ifaces}</div>
+    const ifaces = (n.interfaces || []).map((i) => `<span>${esc(i.name)}</span><span>↓${rate(i.rx_rate)}</span><span>↑${rate(i.tx_rate)}</span>`).join("");
+    return `<article class="panel node">${head}
+      <div class="kv"><span>${esc(n.address || "")}</span><span>UP <b>${uptime(s.uptime)}</b></span><span>CPU <b>${s.cpus}</b></span>
+        <span>LOAD <b>${s.load.map((l) => l.toFixed(2)).join(" ")}</b></span><span>CTR <b>${running}</b></span>
+        ${s.revision ? `<span>REV <b>${esc(s.revision.slice(0, 7))}</b></span>` : ""}</div>
+      ${(n.errors || []).map((e) => `<div class="err">${esc(e)}</div>`).join("")}
+      <div class="rows">
+        ${row("CPU", n.cpu.percent, lv(n.cpu.percent, pct(n.cpu.percent)), `<span></span><div class="full">${spark([{ values: n.cpu.history, color: "var(--amber)" }], { fmt: (v) => v.toFixed(1) + "%", max: 100, label: "CPU" })}</div>`)}
+        ${row("MEM", memP, `${lv(memP, size(m.used))}<small>/${size(m.total)}</small>`, `<span></span><div class="full">${spark([{ values: m.history, color: "var(--amber)" }], { fmt: (v) => v.toFixed(1) + "%", max: 100, label: "MEM" })}</div>`)}
+        ${m.swap_total ? row("SWAP", swapP, `${size(swapU)}<small>/${size(m.swap_total)}</small>`) : ""}
+        ${disks}
+        <span class="l">NET</span><span class="r" style="text-align:left"><span style="color:var(--rx)">↓${rate(n.network.rx_rate)}</span>&nbsp; <span style="color:var(--tx)">↑${rate(n.network.tx_rate)}</span></span><span></span>
+        <span></span><div class="full">${spark([{ name: "↓", values: n.network.rx_history, color: "var(--rx)" }, { name: "↑", values: n.network.tx_history, color: "var(--tx)" }], { fmt: (v) => size(v) + "/s", label: "NET" })}</div>
+        <span></span><div class="full ifaces">${ifaces}</div>
+      </div>
     </article>`;
   }).join("");
 }
@@ -328,100 +363,117 @@ function sortable(tableId, columns, rows) {
     return (typeof va === "string" ? va.localeCompare(vb) : va - vb) * dir;
   });
   const head = "<thead><tr>" + columns.map((c) => {
-    const arrow = c.key === col.key ? (dir > 0 ? "▲" : "▼") : "";
-    return `<th class="${c.num ? "num" : ""}" ${c.sortable === false ? "" : `data-sort="${c.key}"`} scope="col">${c.title} <span class="arrow">${arrow}</span></th>`;
+    const on = c.key === col.key;
+    const sortAttr = c.sortable === false ? "" : `data-sort="${c.key}"`;
+    return `<th class="${c.num ? "num" : ""} ${on ? "on" : ""}" ${sortAttr} scope="col">${c.title}${on ? ` <span class="arrow">${dir > 0 ? "▲" : "▼"}</span>` : ""}</th>`;
   }).join("") + "</tr></thead>";
-  const body = "<tbody>" + (rows.length ? rows.map((r) => "<tr>" + columns.map((c) => `<td class="${c.num ? "num" : ""} ${c.cls || ""}">${c.render(r)}</td>`).join("") + "</tr>").join("")
-    : `<tr><td colspan="${columns.length}" class="muted">該当なし</td></tr>`) + "</tbody>";
+  const body = "<tbody>" + (rows.length
+    ? rows.map((r) => "<tr>" + columns.map((c) => `<td class="${c.num ? "num" : ""} ${c.cls || ""}"${c.title_attr ? ` title="${esc(c.title_attr(r))}"` : ""}>${c.render(r)}</td>`).join("") + "</tr>").join("")
+    : `<tr><td colspan="${columns.length}" class="empty">NO DATA</td></tr>`) + "</tbody>";
   const table = $(tableId);
   table.innerHTML = head + body;
   table.querySelectorAll("th[data-sort]").forEach((th) => th.addEventListener("click", () => {
-    const k = th.dataset.sort;
-    const cur = prefs.sort[tableId] || [];
+    const k = th.dataset.sort, cur = prefs.sort[tableId] || [];
     prefs.sort[tableId] = [k, cur[0] === k ? -cur[1] : (columns.find((c) => c.key === k).num ? -1 : 1)];
     savePrefs();
     render();
   }));
 }
 
-function memCell(used, limit, nodeTotal) {
-  if (used == null) return "—";
-  const cap = limit || nodeTotal;
-  const p = cap ? 100 * used / cap : null;
-  const capLabel = limit ? `上限 ${bytes(limit)}` : `上限なし（ノード ${bytes(nodeTotal)}）`;
-  return `${bytes(used)} ${flag(limit ? p : null)}<span class="sub">${capLabel}${limit ? " · 余裕 " + bytes(limit - used) : ""}</span>${limit ? meter(p, true) : ""}`;
+// value against a limit: "114M/128M" + thin meter; no limit shows "/∞"
+function limited(used, limit, fmt) {
+  if (used == null) return DASH;
+  if (!limit) return `${fmt(used)}<span class="dim">/∞</span>`;
+  const p = 100 * used / limit;
+  return `${lv(p, fmt(used))}<span class="dim">/${fmt(limit)}</span>${seg(p, true)}`;
 }
-function cpuCell(cpu, limit, nodeCpus) {
-  if (cpu == null) return "—";
-  const p = limit ? 100 * cpu / limit : null;
-  return `${cores(cpu)} ${flag(p)}<span class="sub">${limit ? `上限 ${limit} コア（${pct(p)}）` : `上限なし（${nodeCpus} CPU）`}</span>${limit ? meter(p, true) : ""}`;
-}
-function storageTotal(c) {
+const storageTotal = (c) => {
   const s = c.storage || {};
-  const mounts = (s.mounts || []).reduce((a, m) => a + (m.bytes || 0), 0);
-  return s.rw == null && !mounts ? null : (s.rw || 0) + mounts;
+  const m = (s.mounts || []).reduce((a, x) => a + (x.bytes || 0), 0);
+  return s.rw == null && !m ? null : (s.rw || 0) + m;
+};
+const stateDirTotal = (s) => (s.storage || []).reduce((a, d) => a + (d.bytes || 0), 0) || null;
+
+function controls(nodes) {
+  const names = nodes.filter((n) => n.ok).map((n) => n.name);
+  if (prefs.node && !names.includes(prefs.node)) prefs.node = "";
+  const nodeBtns = ["", ...names].map((n) => `<button class="btn" data-node="${esc(n)}" aria-pressed="${prefs.node === n}">${esc(n || "all")}</button>`).join("");
+  $("container-ctl").innerHTML = nodeBtns + `<button class="btn" data-toggle="stopped" aria-pressed="${prefs.stopped}">+exited</button>`;
+  $("service-ctl").innerHTML = nodeBtns + `<button class="btn" data-toggle="small" aria-pressed="${prefs.small}">+&lt;16M</button>`;
+  document.querySelectorAll("[data-node]").forEach((b) => b.addEventListener("click", () => { prefs.node = b.dataset.node; savePrefs(); render(); }));
+  document.querySelectorAll("[data-toggle]").forEach((b) => b.addEventListener("click", () => { prefs[b.dataset.toggle] = !prefs[b.dataset.toggle]; savePrefs(); render(); }));
 }
 
 function renderContainers(nodes) {
-  const nodeFilter = $("node-filter").value;
-  const showStopped = $("show-stopped").checked;
-  const nodeOf = Object.fromEntries(nodes.map((n) => [n.name, n]));
   const rows = nodes.filter((n) => n.ok).flatMap((n) => n.containers || [])
-    .filter((c) => (!nodeFilter || c.node === nodeFilter) && (showStopped || c.state === "running"));
+    .filter((c) => (!prefs.node || c.node === prefs.node) && (prefs.stopped || c.state === "running"));
+  const net = (c, dir) => {
+    if (c.net === "host") return '<span class="dim">host</span>';
+    if (c.net && c.net.shared_with) return `<span class="dim" title="netns of ${esc(c.net.shared_with)}">≡</span>`;
+    return rate(c[`net_${dir}_rate`]);
+  };
   sortable("containers", [
-    { key: "name", title: "コンテナ", cls: "name", render: (c) => `${esc(c.name)}<span class="sub mono">${esc(c.image.replace(/@sha256:.*/, ""))}</span>` },
-    { key: "node", title: "ノード", cls: "nowrap", render: (c) => esc(c.node) },
-    { key: "state", title: "状態", cls: "nowrap", render: (c) => `<span class="status"><span class="dot ${c.state === "running" ? "good" : "off"}"></span>${esc(c.state)}</span><span class="sub">${esc(c.status)}</span>${c.pids == null ? "" : `<span class="sub">PID ${c.pids}${c.pids_max ? " / " + c.pids_max : ""}</span>`}` },
-    { key: "cpu", title: "CPU", num: true, render: (c) => cpuCell(c.cpu, c.cpu_max, nodeOf[c.node]?.system?.cpus) },
-    { key: "memory", title: "メモリ", num: true, render: (c) => memCell(c.memory, c.memory_max, nodeOf[c.node]?.memory?.total) },
-    { key: "mem_trend", title: "メモリ推移", sortable: false, render: (c) => spark([{ values: c.history?.memory, color: "var(--accent)" }], { small: true, fmt: bytes, label: c.name + " メモリ" }) },
-    { key: "net_rx_rate", title: "ネット ↓ / ↑", num: true, render: (c) => netCell(c) },
-    { key: "net_trend", title: "通信推移", sortable: false, render: (c) => c.history?.rx ? spark([{ name: "↓", values: c.history.rx, color: "var(--series-rx)" }, { name: "↑", values: c.history.tx, color: "var(--series-tx)" }], { small: true, fmt: rate, label: c.name + " 通信" }) : '<span class="muted">—</span>' },
-    { key: "io_write_rate", title: "ディスク I/O 読 / 書", num: true, render: (c) => c.state === "running" ? `${rate(c.io_read_rate)}<span class="sub">${rate(c.io_write_rate)}</span>` : "—" },
-    { key: "storage", title: "ストレージ", num: true, sortValue: storageTotal, render: (c) => storageCell(c) },
+    { key: "name", title: "NAME", cls: "name", title_attr: (c) => c.image, render: (c) => esc(c.name) },
+    { key: "node", title: "NODE", render: (c) => esc(c.node) },
+    { key: "state", title: "STATE", render: (c) => `<span class="st ${c.state === "running" ? "ok" : "off"}" title="${esc(c.status)}">${esc(c.state.toUpperCase())}</span>` },
+    { key: "cpu", title: "CPU", num: true, cls: "cell-meter", render: (c) => limited(c.cpu, c.cpu_max, cores) },
+    { key: "memory", title: "MEM", num: true, cls: "cell-meter", render: (c) => limited(c.memory, c.memory_max, size) },
+    { key: "mem_trend", title: "MEM·1H", sortable: false, render: (c) => spark([{ values: c.history?.memory, color: "var(--amber)" }], { small: true, fmt: size, label: c.name }) },
+    { key: "net_rx_rate", title: "RX", num: true, render: (c) => net(c, "rx") },
+    { key: "net_tx_rate", title: "TX", num: true, render: (c) => net(c, "tx") },
+    { key: "net_trend", title: "NET·1H", sortable: false, render: (c) => c.history?.rx ? spark([{ name: "↓", values: c.history.rx, color: "var(--rx)" }, { name: "↑", values: c.history.tx, color: "var(--tx)" }], { small: true, fmt: (v) => size(v) + "/s", label: c.name }) : DASH },
+    { key: "io_write_rate", title: "IO R/W", num: true, render: (c) => c.state === "running" ? `${rate(c.io_read_rate)}<span class="dim"> / </span>${rate(c.io_write_rate)}` : DASH },
+    { key: "storage", title: "DISK", num: true, sortValue: storageTotal,
+      title_attr: (c) => [`rw ${size(c.storage?.rw) ?? "--"}`, ...(c.storage?.mounts || []).map((m) => `${m.destination} ${size(m.bytes)}`)].join("\n"),
+      render: (c) => bytes(storageTotal(c)) },
+    { key: "pids", title: "PIDS", num: true, render: (c) => c.pids == null ? DASH : limited(c.pids, c.pids_max, String) },
   ], rows);
-}
-function netCell(c) {
-  if (c.net === "host") return '<span class="muted">ホストネットワーク</span>';
-  if (c.net && c.net.shared_with) return `<span class="muted">${esc(c.net.shared_with)} と共有</span>`;
-  if (c.net_rx == null) return "—";
-  return `↓ ${rate(c.net_rx_rate)}<span class="sub">↑ ${rate(c.net_tx_rate)}</span><span class="sub">累計 ↓ ${bytes(c.net_rx)} ↑ ${bytes(c.net_tx)}</span>`;
-}
-function storageCell(c) {
-  const s = c.storage || {};
-  const total = storageTotal(c);
-  if (total == null) return '<span class="muted">計測待ち</span>';
-  const parts = [`書き込み層 ${bytes(s.rw || 0)}`].concat((s.mounts || []).map((m) => `${esc(m.destination)} ${bytes(m.bytes)}`));
-  return `${bytes(total)}<span class="sub">${parts.join("<br>")}</span>`;
 }
 
 function renderServices(nodes) {
-  const showSmall = $("show-small").checked;
-  const nodeFilter = $("node-filter").value;
-  const nodeOf = Object.fromEntries(nodes.map((n) => [n.name, n]));
   const rows = nodes.filter((n) => n.ok).flatMap((n) => n.services || [])
-    .filter((s) => (!nodeFilter || s.node === nodeFilter) && (showSmall || (s.memory || 0) >= 16 * 1024 * 1024));
+    .filter((s) => (!prefs.node || s.node === prefs.node) && (prefs.small || (s.memory || 0) >= 16 * 1024 * 1024));
   sortable("services", [
-    { key: "unit", title: "サービス", cls: "name", render: (s) => `<span class="mono">${esc(s.unit.replace(/\.service$/, ""))}</span>` },
-    { key: "node", title: "ノード", cls: "nowrap", render: (s) => esc(s.node) },
-    { key: "cpu", title: "CPU", num: true, render: (s) => cpuCell(s.cpu, s.cpu_max, nodeOf[s.node]?.system?.cpus) },
-    { key: "memory", title: "メモリ", num: true, render: (s) => memCell(s.memory, s.memory_max, nodeOf[s.node]?.memory?.total) },
-    { key: "mem_trend", title: "メモリ推移", sortable: false, render: (s) => spark([{ values: s.history?.memory, color: "var(--accent)" }], { small: true, fmt: bytes, label: s.unit + " メモリ" }) },
-    { key: "io_write_rate", title: "ディスク I/O 読 / 書", num: true, render: (s) => `${rate(s.io_read_rate)}<span class="sub">${rate(s.io_write_rate)}</span>` },
-    { key: "storage", title: "StateDirectory", num: true, sortValue: (s) => (s.storage || []).reduce((a, d) => a + (d.bytes || 0), 0) || null,
-      render: (s) => (s.storage || []).length ? s.storage.map((d) => `${bytes(d.bytes)}<span class="sub mono">${esc(d.path)}</span>`).join("") : '<span class="muted">—</span>' },
+    { key: "unit", title: "UNIT", cls: "name", render: (s) => esc(s.unit.replace(/\.service$/, "")) },
+    { key: "node", title: "NODE", render: (s) => esc(s.node) },
+    { key: "cpu", title: "CPU", num: true, cls: "cell-meter", render: (s) => limited(s.cpu, s.cpu_max, cores) },
+    { key: "memory", title: "MEM", num: true, cls: "cell-meter", render: (s) => limited(s.memory, s.memory_max, size) },
+    { key: "mem_trend", title: "MEM·1H", sortable: false, render: (s) => spark([{ values: s.history?.memory, color: "var(--amber)" }], { small: true, fmt: size, label: s.unit }) },
+    { key: "io_write_rate", title: "IO R/W", num: true, render: (s) => `${rate(s.io_read_rate)}<span class="dim"> / </span>${rate(s.io_write_rate)}` },
+    { key: "storage", title: "STATE DIR", num: true, sortValue: stateDirTotal,
+      title_attr: (s) => (s.storage || []).map((d) => `${d.path} ${size(d.bytes)}`).join("\n"),
+      render: (s) => bytes(stateDirTotal(s)) },
   ], rows);
 }
 
 function renderTailnet(nodes) {
   sortable("tailnet", [
-    { key: "name", title: "ノード", render: (n) => `<span class="status"><span class="dot ${nodeState(n)[0]}"></span>${esc(n.name)}</span>` },
-    { key: "address", title: "IP", render: (n) => `<span class="mono">${esc(n.address || "—")}</span>` },
-    { key: "tags", title: "タグ", sortValue: (n) => (n.tailnet?.tags || []).join(","), render: (n) => (n.tailnet?.tags || []).map((t) => `<span class="tag">${esc(t)}</span>`).join(" ") || "—" },
-    { key: "online", title: "tailnet", sortValue: (n) => n.tailnet?.online ? 1 : 0, render: (n) => n.tailnet?.online ? "オンライン" : `オフライン<span class="sub">最終確認 ${ago(n.tailnet?.last_seen)}</span>` },
-    { key: "agent", title: "エージェント", sortValue: (n) => n.ok ? 1 : 0, render: (n) => n.ok ? "応答あり" : `<span class="secondary">${esc(n.error || "—")}</span>` },
-    { key: "os", title: "OS", render: (n) => esc(n.system ? `NixOS ${n.system.nixos || ""} · ${n.system.kernel}` : n.tailnet?.os || "—") },
+    { key: "name", title: "NODE", cls: "name", render: (n) => esc(n.name) },
+    { key: "address", title: "ADDR", render: (n) => esc(n.address || "--") },
+    { key: "tags", title: "TAGS", sortValue: (n) => (n.tailnet?.tags || []).join(","), render: (n) => (n.tailnet?.tags || []).map((t) => `<span class="tag">${esc(t.replace(/^tag:/, ""))}</span>`).join(" ") || DASH },
+    { key: "online", title: "LINK", sortValue: (n) => n.tailnet?.online ? 1 : 0, render: (n) => n.tailnet?.online ? '<span class="st ok">UP</span>' : `<span class="st off">DOWN</span> <span class="dim">${since(n.tailnet?.last_seen)}</span>` },
+    { key: "ok", title: "AGENT", sortValue: (n) => n.ok ? 1 : 0, render: (n) => { const [c, t] = nodeCode(n); return `<span class="st ${c}" title="${esc(n.error || "")}">${n.ok ? "OK" : t}</span>`; } },
+    { key: "os", title: "SYSTEM", render: (n) => n.system ? `NixOS ${esc(n.system.nixos || "")} <span class="dim">${esc(n.system.kernel)}</span>` : esc(n.tailnet?.os || "--") },
   ], nodes.slice());
+}
+
+function renderStatus(nodes) {
+  const alerts = [];
+  for (const n of nodes) {
+    if (!n.ok && n.tailnet?.online !== false) alerts.push(`${n.name}: ${n.error || "no agent"}`);
+    if (!n.ok) continue;
+    const memP = 100 * n.memory.used / n.memory.total;
+    if (memP >= 90) alerts.push(`${n.name}: memory ${pct(memP)}`);
+    for (const f of n.filesystems || []) if (100 * f.used / f.total >= 90) alerts.push(`${n.name}: disk ${f.mount} ${pct(100 * f.used / f.total)}`);
+    for (const c of n.containers || []) if (c.memory_max && 100 * c.memory / c.memory_max >= 90) alerts.push(`${n.name}/${c.name}: memory ${pct(100 * c.memory / c.memory_max)} of limit`);
+  }
+  const stale = state.updated && Date.now() / 1000 - state.updated > 3 * (state.interval || 10);
+  if (state.error) alerts.unshift(state.error);
+  if (stale) alerts.unshift("collector stale");
+  const [cls, code] = !state.updated ? ["idle", "INIT"] : stale ? ["crit", "STALE"] : alerts.length ? ["warn", "DEGRADED"] : ["ok", "NOMINAL"];
+  $("code").className = "code " + cls;
+  $("code").innerHTML = `<span class="blink"></span>${code}`;
+  $("alert").innerHTML = alerts.length ? `<div class="alert" role="alert"><div class="stripe"></div><div class="msg"><b>WARNING</b>${alerts.map((a) => `<span>${esc(a)}</span>`).join("")}</div></div>` : "";
 }
 
 function render() {
@@ -429,19 +481,18 @@ function render() {
   sparkData.clear();
   sparkId = 0;
   const nodes = state.nodes || [];
-  const sel = $("node-filter"), cur = sel.value;
-  sel.innerHTML = '<option value="">すべて</option>' + nodes.filter((n) => n.ok).map((n) => `<option ${n.name === cur ? "selected" : ""}>${esc(n.name)}</option>`).join("");
-  const stale = state.updated && Date.now() / 1000 - state.updated > 3 * (state.interval || 10);
-  const down = nodes.filter((n) => !n.ok).length;
-  const [cls, text] = !state.updated ? ["off", "データ待ち"] : stale ? ["critical", "更新停止中"] : down ? ["warning", `${down} ノード応答なし`] : ["good", "正常"];
-  $("status").innerHTML = `<span class="dot ${cls}"></span>${text} · 更新 ${time(state.updated)}`;
-  $("collector").textContent = state.collector ? `収集元 ${state.collector}` : "";
-  $("banner").innerHTML = state.error ? `<div class="banner">${esc(state.error)}</div>` : "";
-  renderTiles(nodes);
+  renderStatus(nodes);
+  renderSummary(nodes);
   renderNodes(nodes);
+  controls(nodes);
   renderContainers(nodes);
   renderServices(nodes);
   renderTailnet(nodes);
+}
+
+function tick() {
+  const age = state?.updated ? Math.round(Date.now() / 1000 - state.updated) : null;
+  $("clock").innerHTML = `UTC <b>${utc(new Date())}</b>${age != null ? `  SYNC T-${age}s` : ""}${state?.collector ? `  SRC ${esc(state.collector)}` : ""}`;
 }
 
 async function poll() {
@@ -450,28 +501,14 @@ async function poll() {
     if (!r.ok) throw new Error("HTTP " + r.status);
     state = await r.json();
   } catch (e) {
-    state = state ? { ...state, error: "ダッシュボードに接続できません: " + e.message } : { nodes: [], error: "ダッシュボードに接続できません: " + e.message };
+    state = { ...(state || { nodes: [] }), error: "dashboard unreachable: " + e.message };
   }
   render();
+  tick();
 }
-
-// Theme toggle: auto -> light -> dark.
-const themes = ["auto", "light", "dark"], themeLabels = { auto: "自動", light: "ライト", dark: "ダーク" };
-function applyTheme() {
-  const t = prefs.theme || "auto";
-  if (t === "auto") document.documentElement.removeAttribute("data-theme");
-  else document.documentElement.setAttribute("data-theme", t);
-  $("theme").textContent = "テーマ: " + themeLabels[t];
-}
-$("theme").addEventListener("click", () => {
-  prefs.theme = themes[(themes.indexOf(prefs.theme || "auto") + 1) % themes.length];
-  savePrefs();
-  applyTheme();
-});
-for (const id of ["node-filter", "show-stopped", "show-small"]) $(id).addEventListener("change", render);
-applyTheme();
 poll();
 setInterval(poll, 10000);
+setInterval(tick, 1000);
 </script>
 </body>
 </html>
