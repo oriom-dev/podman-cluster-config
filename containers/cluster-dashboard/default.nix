@@ -95,8 +95,8 @@ in
         description = "Cluster dashboard metrics agent";
         requires = [ "cluster-agent.socket" ];
         after = [ "cluster-agent.socket" ];
-        # podman, tailscale, du, systemctl and nixos-version, all read-only uses.
-        path = [ podman pkgs.coreutils config.systemd.package config.services.tailscale.package "/run/current-system/sw" ];
+        # podman, tailscale, du, ss, systemctl and nixos-version, all read-only uses.
+        path = [ podman pkgs.coreutils pkgs.iproute2 config.systemd.package config.services.tailscale.package "/run/current-system/sw" ];
         environment = {
           AGENT_PODMAN = "${podman}/bin/podman";
           AGENT_COLLECT = if cfg.enable then "1" else "0";
@@ -129,6 +129,14 @@ in
           RestrictAddressFamilies = [ "AF_UNIX" "AF_INET" "AF_INET6" "AF_NETLINK" ];
         };
       };
+
+      # Request and status-code counters per site on Caddy's admin endpoint (localhost:2019);
+      # the agent maps each site to the unit listening on its reverse_proxy upstream.
+      services.caddy.globalConfig = lib.mkIf config.services.caddy.enable ''
+        metrics {
+          per_host
+        }
+      '';
 
       # Not on public interfaces; the Headscale ACL limits sources to tag:ingress.
       networking.firewall.interfaces.tailscale0.allowedTCPPorts =

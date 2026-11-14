@@ -18,7 +18,7 @@ the node's remaining capacity. One hour of history is kept in memory.
 
 | Part | Where | Notes |
 |---|---|---|
-| `agent.py` | every node with `services.cluster-dashboard.agent.enable` | `/proc`, cgroup v2, `podman ps/inspect`, `du` every 10 min. Never changes anything |
+| `agent.py` | every node with `services.cluster-dashboard.agent.enable` | `/proc`, cgroup v2, `podman ps/inspect`, `du` every 10 min, `systemctl show`, `ss -ltnp`, Caddy admin API (read only). Never changes anything |
 | collector | the node with `services.cluster-dashboard.enable` | the local agent also pulls every peer listed by `tailscale status` |
 | `app/` | container `cluster-dashboard` | stdlib Python on the pinned `python:3.13-alpine`; only the agent socket is mounted |
 | sidecar | container `cluster-dashboard-ts` | `tailscale/tailscale` in userspace mode, no capabilities, in the dashboard's netns |
@@ -31,6 +31,22 @@ port; `127.0.0.1:3010` exists for SSH tunnels:
 ```sh
 ssh -L 3010:127.0.0.1:3010 kagoya_vps1   # then http://127.0.0.1:3010/
 ```
+
+## Health, relations and HTTP requests
+
+- Container health comes from the Podman status (`healthy` / `unhealthy` / `starting`);
+  containers without a healthcheck count as running. A restart within the last hour
+  (`NRestarts` of `podman-<name>.service`) shows as RESTARTED.
+- Hovering a container or service highlights the units it is related to: systemd
+  dependencies (`Requires`, `Wants`, `BindsTo`, `PartOf`, `Requisite`, `Upholds`, both
+  directions) and Caddy → the unit listening on each `reverse_proxy` upstream port.
+- Where Caddy runs, the module turns on its `metrics { per_host }` option. The agent reads
+  `caddy_http_request_duration_seconds_count` from `localhost:2019/metrics`. For each
+  site it uses only the busiest handler, because Caddy counts a request once for every
+  instrumented handler in the chain. It attributes each site to its upstream unit; the
+  `caddy` row shows all sites. REQ/S is the current rate. 5XX is the share of 5xx responses
+  over the last hour; the 4xx share and the hosts are in the hover title. Only HTTP
+  through Caddy is counted: raw TCP (Minecraft) and the tailnet-only dashboard are not.
 
 ## Tailscale tailnet policy (admin console, done by the operator)
 

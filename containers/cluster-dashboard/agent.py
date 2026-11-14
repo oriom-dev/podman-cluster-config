@@ -12,7 +12,8 @@ and is socket-activated by systemd:
 Counters are cumulative (bytes, CPU microseconds); the dashboard derives rates
 from consecutive samples, so the agent keeps no history and holds no state that
 matters across restarts. It never changes anything: Podman, systemctl, du and
-tailscale are only invoked with read-only subcommands.
+tailscale are only invoked with read-only subcommands; Caddy's admin API is
+only read (/config/ and /metrics).
 """
 
 from __future__ import annotations
@@ -26,6 +27,7 @@ import socketserver
 import subprocess
 import threading
 import time
+import re
 import urllib.request
 
 PODMAN = os.environ.get("AGENT_PODMAN", "podman")
@@ -34,6 +36,8 @@ COLLECT = os.environ.get("AGENT_COLLECT", "0") == "1"
 PEER_PORT = int(os.environ.get("AGENT_PEER_PORT", "9925"))
 STORAGE_INTERVAL = int(os.environ.get("AGENT_STORAGE_INTERVAL", "600"))
 SNAPSHOT_TTL = 3.0
+TOPOLOGY_TTL = 60.0
+CADDY_ADMIN = os.environ.get("AGENT_CADDY_ADMIN", "http://127.0.0.1:2019")
 
 CGROUP_ROOT = "/sys/fs/cgroup"
 REAL_FS = {"ext4", "ext3", "xfs", "btrfs", "f2fs", "zfs", "vfat", "bcachefs"}
@@ -326,6 +330,8 @@ def containers(storage: dict) -> list[dict]:
             "image": c.get("Image", ""),
             "state": c.get("State", ""),
             "status": c.get("Status", ""),
+            "health": container_health(c.get("Status", "")),
+            "exit_code": c.get("ExitCode"),
             "started": c.get("StartedAt"),
             "network_mode": info.get("network_mode", ""),
             "storage": {
@@ -370,6 +376,210 @@ def services(storage: dict) -> list[dict]:
     return result
 
 
+def container_health(status: str) -> str | None:
+    """healthy / unhealthy / starting from Podman's status text; None without a check."""
+    match = re.search(r"\((healthy|unhealthy|starting)\)", status)
+    return match.group(1) if match else None
+
+
+# ---------------------------------------------------------------------------
+# Topology: unit dependencies and Caddy routes, refreshed every TOPOLOGY_TTL
+
+DEPENDENCY_PROPS = ("Requires", "Requisite", "Wants", "BindsTo", "PartOf", "Upholds")
+
+
+def parse_systemctl_show(text: str) -> dict[str, dict[str, str]]:
+    """Blocks of `systemctl show -p Id,...` separated by blank lines, keyed by Id."""
+    units: dict[str, dict[str, str]] = {}
+    for block in text.split("\n\n"):
+        props = dict(line.split("=", 1) for line in block.splitlines() if "=" in line)
+        if props.get("Id"):
+            units[props["Id"]] = props
+    return units
+
+
+def caddy_routes(config: dict) -> dict[str, list[int]]:
+    """Host -> upstream ports on this machine, from Caddy's JSON config."""
+    def dials(node) -> list[str]:
+        if isinstance(node, dict):
+            found = [u["dial"] for u in node.get("upstreams") or [] if isinstance(u, dict) and "dial" in u]
+            return found + [d for k, v in node.items() if k != "upstreams" for d in dials(v)]
+        if isinstance(node, list):
+            return [d for v in node for d in dials(v)]
+        return []
+
+    routes: dict[str, list[int]] = {}
+    servers = (((config.get("apps") or {}).get("http") or {}).get("servers") or {})
+    for server in servers.values():
+        for route in server.get("routes") or []:
+            hosts = [h for m in route.get("match") or [] for h in m.get("host") or []]
+            ports = []
+            for dial in dials(route.get("handle")):
+                host, _, port = dial.rpartition(":")
+                if host.strip("[]") in ("127.0.0.1", "localhost", "::1") and port.isdigit():
+                    ports.append(int(port))
+            for host in hosts:
+                routes.setdefault(host, [])
+                routes[host] += [p for p in ports if p not in routes[host]]
+    return routes
+
+
+def parse_ss_listeners(text: str) -> dict[int, int]:
+    """Local TCP port -> owning pid from `ss -ltnpH`."""
+    owners: dict[int, int] = {}
+    for line in text.splitlines():
+        fields = line.split()
+        if len(fields) < 6:
+            continue
+        port = fields[3].rpartition(":")[2]
+        pid = re.search(r"pid=(\d+)", line)
+        if port.isdigit() and pid:
+            owners.setdefault(int(port), int(pid.group(1)))
+    return owners
+
+
+def unit_of_pid(pid: int) -> str | None:
+    for line in (read_text(f"/proc/{pid}/cgroup") or "").splitlines():
+        if line.startswith("0::"):
+            for part in line[3:].split("/"):
+                if part.endswith(".service"):
+                    return part
+    return None
+
+
+def parse_caddy_metrics(text: str) -> dict[str, dict[str, int]]:
+    """Per host: requests, 4xx and 5xx from caddy_http_request_duration_seconds_count.
+
+    Caddy counts a request once per instrumented handler in its chain (subroute,
+    reverse_proxy, ...), so only the busiest handler of each host is used.
+    """
+    per: dict[tuple[str, str], dict[str, int]] = {}
+    for line in text.splitlines():
+        if not line.startswith("caddy_http_request_duration_seconds_count{"):
+            continue
+        labels_text, _, value = line[len("caddy_http_request_duration_seconds_count{"):].rpartition("} ")
+        labels = dict(re.findall(r'(\w+)="((?:[^"\\]|\\.)*)"', labels_text))
+        try:
+            count = int(float(value))
+        except ValueError:
+            continue
+        key = (labels.get("host", ""), labels.get("handler", ""))
+        bucket = per.setdefault(key, {"requests": 0, "status4": 0, "status5": 0})
+        bucket["requests"] += count
+        code = labels.get("code", "")
+        if code.startswith("4"):
+            bucket["status4"] += count
+        elif code.startswith("5"):
+            bucket["status5"] += count
+    hosts: dict[str, dict[str, int]] = {}
+    for (host, _), bucket in per.items():
+        if host and bucket["requests"] > hosts.get(host, {}).get("requests", -1):
+            hosts[host] = bucket
+    return hosts
+
+
+class Topology:
+    def __init__(self) -> None:
+        self.at = 0.0
+        self.key: tuple = ()
+        self.related: dict[str, set[str]] = {}
+        self.restarts: dict[str, int] = {}
+        self.hosts: dict[str, list[str]] = {}  # unit -> Caddy hosts proxied to it
+        self.caddy = False
+        self.lock = threading.Lock()
+
+    def refresh(self, units: list[str]) -> None:
+        key = tuple(sorted(units))
+        with self.lock:
+            if key == self.key and time.time() - self.at < TOPOLOGY_TTL:
+                return
+            self.key, self.at = key, time.time()
+            wanted = set(units)
+            related: dict[str, set[str]] = {u: set() for u in units}
+            restarts: dict[str, int] = {}
+
+            def link(a: str, b: str) -> None:
+                if a != b and a in wanted and b in wanted:
+                    related[a].add(b)
+                    related[b].add(a)
+
+            try:
+                props = ",".join(("Id", "NRestarts") + DEPENDENCY_PROPS)
+                shown = parse_systemctl_show(run(["systemctl", "show", "-p", props, "--", *units], timeout=10))
+            except (OSError, subprocess.SubprocessError):
+                shown = {}
+            for unit, values in shown.items():
+                if values.get("NRestarts", "").isdigit():
+                    restarts[unit] = int(values["NRestarts"])
+                for prop in DEPENDENCY_PROPS:
+                    for other in values.get(prop, "").split():
+                        link(unit, other)
+
+            hosts: dict[str, list[str]] = {}
+            self.caddy = "caddy.service" in wanted
+            if self.caddy:
+                try:
+                    with urllib.request.urlopen(f"{CADDY_ADMIN}/config/", timeout=3) as r:
+                        routes = caddy_routes(json.load(r) or {})
+                    owners = parse_ss_listeners(run(["ss", "-ltnpH"], timeout=5))
+                except (OSError, subprocess.SubprocessError, ValueError):
+                    routes, owners = {}, {}
+                for host, ports in routes.items():
+                    for port in ports:
+                        unit = unit_of_pid(owners[port]) if port in owners else None
+                        if unit in wanted and unit != "caddy.service":
+                            link("caddy.service", unit)
+                            hosts.setdefault(unit, [])
+                            if host not in hosts[unit]:
+                                hosts[unit].append(host)
+            self.related, self.restarts, self.hosts = related, restarts, hosts
+
+    def http(self) -> dict[str, dict]:
+        """Unit -> cumulative request counters of the hosts it serves; caddy.service gets all."""
+        if not self.caddy:
+            return {}
+        try:
+            with urllib.request.urlopen(f"{CADDY_ADMIN}/metrics", timeout=3) as r:
+                per_host = parse_caddy_metrics(r.read().decode())
+        except (OSError, ValueError):
+            return {}
+        if not per_host:
+            return {}
+
+        def total(hosts) -> dict:
+            out = {"hosts": sorted(hosts), "requests": 0, "status4": 0, "status5": 0}
+            for host in hosts:
+                for k in ("requests", "status4", "status5"):
+                    out[k] += per_host.get(host, {}).get(k, 0)
+            return out
+
+        result = {unit: total(hosts) for unit, hosts in self.hosts.items()}
+        result["caddy.service"] = total([h for h in per_host if h != "_other"] or per_host)
+        return result
+
+
+TOPOLOGY = Topology()
+
+
+def attach_topology(snap: dict) -> None:
+    """Adds unit, related units, restarts and HTTP counters to containers and services."""
+    for c in snap["containers"]:
+        c["unit"] = f"podman-{c['name']}.service"
+    workloads = snap["containers"] + snap["services"]
+    try:
+        TOPOLOGY.refresh([w["unit"] for w in workloads])
+        http = TOPOLOGY.http()
+    except Exception as exc:  # topology is decoration; never fail the snapshot
+        snap["errors"].append(f"topology: {exc}")
+        return
+    for w in workloads:
+        w["related"] = sorted(TOPOLOGY.related.get(w["unit"], ()))
+        if w["unit"] in TOPOLOGY.restarts:
+            w["restarts"] = TOPOLOGY.restarts[w["unit"]]
+        if w["unit"] in http:
+            w["http"] = http[w["unit"]]
+
+
 # ---------------------------------------------------------------------------
 # Snapshots
 
@@ -401,6 +611,7 @@ def node_snapshot() -> dict:
         except (OSError, subprocess.SubprocessError, ValueError) as exc:
             snap["containers"] = []
             snap["errors"].append(f"podman: {exc}")
+        attach_topology(snap)
         _snapshot = (now, snap)
         return snap
 

@@ -64,6 +64,20 @@ def net_totals(net) -> tuple[int, int] | None:
     return (sum(i["rx"] for i in net.values()), sum(i["tx"] for i in net.values()))
 
 
+def window_ratios(series: dict[str, list]) -> dict:
+    """4xx and 5xx shares of the requests in the history window (None without traffic)."""
+    pairs = [(r, e4, e5) for r, e4, e5 in zip(series["requests"], series["status4"], series["status5"])
+             if r is not None]
+    total = sum(p[0] for p in pairs)
+    if not total:
+        return {"ratio4_1h": None, "ratio5_1h": None, "requests_1h": 0}
+    return {
+        "ratio4_1h": sum(p[1] or 0 for p in pairs) / total,
+        "ratio5_1h": sum(p[2] or 0 for p in pairs) / total,
+        "requests_1h": round(total * INTERVAL),
+    }
+
+
 def compact(value: float | None) -> float | None:
     if value is None:
         return None
@@ -162,6 +176,18 @@ class State:
         if totals:
             view["history"]["rx"] = self.push(f"{key}:rx", view["net_rx_rate"], now)
             view["history"]["tx"] = self.push(f"{key}:tx", view["net_tx_rate"], now)
+        if item.get("restarts") is not None:
+            restarts = [r for r in self.push(f"{key}:restarts", item["restarts"], now) if r is not None]
+            view["restarts_1h"] = max(0, restarts[-1] - restarts[0])
+        http = item.get("http")
+        if http:
+            old = prev.get("http") or {}
+            rates = {k: rate(http.get(k), old.get(k), dt) for k in ("requests", "status4", "status5")}
+            series = {k: self.push(f"{key}:http:{k}", v, now) for k, v in rates.items()}
+            view["http"] = {"hosts": http.get("hosts", []), **{f"{k}_rate": v for k, v in rates.items()}}
+            view["http"].update(window_ratios(series))
+            view["history"]["requests"] = series["requests"]
+            view["history"]["status5"] = series["status5"]
         return view
 
     def update(self) -> None:
