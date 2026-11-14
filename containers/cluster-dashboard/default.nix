@@ -1,7 +1,7 @@
 # Cluster resource dashboard (see README.md).
 #
 # - agent (every node, native): read-only metrics of the node, its Podman containers
-#   and native services. Socket-activated on /run/cluster-dashboard/agent.sock; with
+#   and native services. Socket-activated on /run/cluster-dashboard-agent/agent.sock; with
 #   `agent.listenTailnet` also on tailscale0:9925 so the collector can pull it. The
 #   Headscale ACL lets only tag:ingress reach that port.
 # - dashboard (one node): the local agent also collects every tailnet peer, and a
@@ -15,7 +15,9 @@ let
   cfg = config.services.cluster-dashboard;
   agentPort = 9925;
   uiPort = 3010;
-  socketDir = "/run/cluster-dashboard";
+  # Not /run/cluster-dashboard: oci-containers owns that as the container's RuntimeDirectory
+  # and systemd recreates it (deleting the socket) whenever the container restarts.
+  socketDir = "/run/cluster-dashboard-agent";
   gid = 29925; # shared by the agent socket and the dashboard container's user
   podman = config.virtualisation.podman.package;
 
