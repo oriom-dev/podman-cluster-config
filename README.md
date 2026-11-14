@@ -47,11 +47,21 @@ SOPS の age 鍵は必要に応じて `.config/age.txt`（パーミッション 
 
 BSAF を Nostr へ取り込む importer は、ルート鍵から認証局を経て発行された鍵署名チェーンで認可されます（`dev.jisaku.mosimo.attest`）。鍵署名は 2 年有効で、定期的な更新は不要です。失効は失効通知を公開したときにだけ反映されます。
 
-鍵の発行は [`sd_2607/appview/bsaf/identity-cli.mjs`](https://github.com/jphacks/sd_2607/blob/main/appview/bsaf/PUBLISHER.md) をオフラインで実行し、出力先を `.config/mosimo-trust/` にします。ルート鍵・認証局鍵・PLC 管理鍵はこのディレクトリから出しません。
+鍵の発行と失効は sd_2607 の認証局ツール [`mosimo-ca`](https://github.com/jphacks/sd_2607/blob/main/ca/README.md) でオフラインに行い、鍵は sd_2607 の `ca/keys/`（Git 管理外）に置きます。ルート鍵・認証局鍵・PLC 管理鍵はそこから出しません。
+
+サーバーに置くのは importer の署名鍵 2 つだけで、すべて宣言的に配置します（sd_2607 の [`appview/bsaf/PUBLISHER.md` の Key placement](https://github.com/jphacks/sd_2607/blob/main/appview/bsaf/PUBLISHER.md#key-placement)）。
+
+| ファイル | 置き場所 |
+|---|---|
+| `nostr.pem`・`atproto.pem`（秘密鍵） | `containers/happyview/secrets.yaml` の `mosimo_importer_nostr_pem`・`mosimo_importer_atproto_pem`（sops で暗号化） |
+| `identity.json`・`chain.cbor`・`roots.json`（公開） | `containers/happyview/mosimo-importer/` |
+| `revocations.cbor`（公開、認証局が署名） | `containers/happyview/mosimo-trust/`。Caddy が `/.well-known/mosimo/attest/revocations` で配信 |
+
+鍵を更新するときは、sd_2607 で次を実行してからコミットしてデプロイします。
 
 ```sh
-MOSIMO_PRIVATE_DIR=$(pwd)/.config/mosimo-trust node ../sd_2607/appview/bsaf/identity-cli.mjs verify
-./bin/mosimo-trust-install.sh kagoya_vps1
+nix run ./ca -- credentials <importer の鍵> --out /tmp/importer   # 書き出し後に削除する
+# 公開ファイルを containers/happyview/mosimo-importer/ へコピーし、PEM を sops で secrets.yaml に入れる
 ```
 
-配置されるのは publisher 用の `credentials.json`・`roots.json` と、Caddy が `/.well-known/mosimo/attest/revocations` で配信する `revocations.cbor` の 3 つだけです。公開設定は `receiver-export` の出力を `containers/mosimo-pds/public-information.json` へ反映します。
+公開設定は `identity-cli.mjs receiver-export` の出力を `containers/mosimo-pds/public-information.json` へ反映します。

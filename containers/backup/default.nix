@@ -93,8 +93,6 @@ in
       ];
       extraPaths = [
         "/var/lib/headscale/noise_private.key"
-        "/var/lib/mosimo-importer"
-        "/var/lib/mosimo-trust"
         "/var/lib/mosimo-deploy"
       ];
       timer = { OnCalendar = "*-*-* 03:30:00"; RandomizedDelaySec = "15m"; Persistent = true; };

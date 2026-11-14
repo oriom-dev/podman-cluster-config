@@ -1,0 +1,12 @@
+[
+  {
+    "pubkey": "3b92115866d54bb1799529ac39312bcd60bbfc1f5235b5785f4f7db748c62510",
+    "name": "Oriom Mosimo trust root",
+    "roles": [
+      "attest",
+      "import"
+    ],
+    "maxDepth": 16,
+    "enabled": true
+  }
+]
