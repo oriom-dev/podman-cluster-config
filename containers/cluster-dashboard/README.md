@@ -5,7 +5,7 @@ storage and network each container and native service uses against its limit and
 the node's remaining capacity. One hour of history is kept in memory.
 
 ```
- tag:host / tag:mobile ──(Tailscale tailnet oriom-dev.github, svc:dashboard tcp:80)──┐
+ tag:host / tag:mobile ──(Tailscale tailnet oriom-dev.github, svc:dashboard https:443)─┐
                                                                                       ▼
  kagoya-vps ┌─ netns of container cluster-dashboard ──────────────────────────────────────┐
             │  cluster-dashboard-ts (userspace tailscaled, tag:svc) ─→ 127.0.0.1:8080       │
@@ -41,7 +41,7 @@ ssh -L 3010:127.0.0.1:3010 kagoya_vps1   # then http://127.0.0.1:3010/
      "tag:svc": ["autogroup:admin"]
    },
    "grants": [
-     {"src": ["tag:host", "tag:mobile"], "dst": ["svc:dashboard"], "ip": ["tcp:80"]}
+     {"src": ["tag:host", "tag:mobile"], "dst": ["svc:dashboard"], "ip": ["tcp:443"]}
    ],
    "autoApprovers": {
      "services": {"svc:dashboard": ["tag:svc"]}
@@ -50,7 +50,9 @@ ssh -L 3010:127.0.0.1:3010 kagoya_vps1   # then http://127.0.0.1:3010/
 
    Make sure no existing rule grants `*` or `tag:host`/`tag:mobile` → `tag:svc`
    beyond this; the sidecar serves nothing on its own device address anyway.
-2. Services → define `svc:dashboard` with port `tcp:80`.
+2. Services → define `svc:dashboard` with port `tcp:443`, and DNS → enable HTTPS Certificates
+   (MagicDNS is required). Tailscale then issues and renews the Let's Encrypt certificate for
+   `dashboard.<tailnet>.ts.net`; the name appears in public Certificate Transparency logs.
 3. First login of the sidecar: Settings → Keys → generate an auth key with tag
    `tag:svc`, **not** reusable, pre-approved, short expiry. Put it in the secret and
    deploy:
@@ -65,7 +67,7 @@ ssh -L 3010:127.0.0.1:3010 kagoya_vps1   # then http://127.0.0.1:3010/
    Interactive login does not work: containerboot kills `tailscale up` after 60 s
    and the container restarts with a new login URL.
 
-Then open `http://dashboard.<tailnet>.ts.net/` from a `tag:host` or `tag:mobile`
+Then open `https://dashboard.<tailnet>.ts.net/` from a `tag:host` or `tag:mobile`
 device.
 
 ## Adding a node

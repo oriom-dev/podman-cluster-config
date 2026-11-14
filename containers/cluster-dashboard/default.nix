@@ -19,8 +19,14 @@ let
   gid = 29925; # shared by the agent socket and the dashboard container's user
   podman = config.virtualisation.podman.package;
 
+  # HTTPS on 443: tailscaled terminates TLS with the Service's Let's Encrypt certificate for
+  # <service>.<tailnet>.ts.net (issued and renewed by Tailscale) and proxies plain HTTP to the UI.
+  serviceHost = "${lib.removePrefix "svc:" cfg.tailscale.service}.${cfg.tailscale.tailnetDomain}";
   serveConfig = pkgs.writeTextDir "serve.json" (builtins.toJSON {
-    Services.${cfg.tailscale.service}.TCP."80".TCPForward = "127.0.0.1:8080";
+    Services.${cfg.tailscale.service} = {
+      TCP."443".HTTPS = true;
+      Web."${serviceHost}:443".Handlers."/".Proxy = "http://127.0.0.1:8080";
+    };
   });
 in
 {
@@ -41,7 +47,12 @@ in
       service = lib.mkOption {
         type = lib.types.strMatching "svc:[a-z0-9-]+";
         default = "svc:dashboard";
-        description = "Tailscale Service the sidecar hosts (TCP 80).";
+        description = "Tailscale Service the sidecar hosts (HTTPS on TCP 443).";
+      };
+      tailnetDomain = lib.mkOption {
+        type = lib.types.strMatching "[a-z0-9-]+\\.ts\\.net";
+        default = "tailc8f497.ts.net";
+        description = "MagicDNS suffix of the operator's Tailscale tailnet; the Service is https://<service>.<tailnetDomain>/.";
       };
       hostname = lib.mkOption {
         type = lib.types.str;
