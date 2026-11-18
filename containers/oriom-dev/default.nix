@@ -22,6 +22,14 @@
       # (node names, CPU, memory, traffic, uptime, running container names).
       agentSocket = "/run/cluster-agent/agent.sock";
       agentGid = 29925;
+      # ADMIN_PATH: the admin page's unguessable path (shown only over HTTPS)
+      environmentFile = config.sops.secrets."oriom-dev_env".path;
+    };
+    sops.secrets."oriom-dev_env" = {
+      sopsFile = ./secrets.yaml;
+      format = "yaml";
+      mode = "0400";
+      restartUnits = [ "podman-oriom-dev.service" ];
     };
     # CoAP, Gopher and Gemini cannot go through Caddy.
     cluster.containerPolicy.publicPortContainers = [ "oriom-dev" ];

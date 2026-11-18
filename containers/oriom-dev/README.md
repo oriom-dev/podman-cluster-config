@@ -22,6 +22,12 @@ The server reads `/run/cluster-agent/agent.sock` (group 29925) and publishes an
 allowlisted summary only: node names, CPU, memory, traffic, uptime, load and the names
 of running containers. No addresses, images, mounts, kernel or revision.
 
+## Admin page
+
+`secrets.yaml` holds `ADMIN_PATH` (`./bin/secret-edit.sh oriom-dev` to read or change it).
+The page is served at that path over HTTPS only; sign in there with the site's Bluesky
+account to write the standard.site publication, posts and announcements.
+
 ## DNS (Cloudflare, done by the operator)
 
 `oriom.dev` and `www.oriom.dev`: `A 133.18.180.180`, `AAAA 2406:8c00:0:3462:133:18:180:180`,
