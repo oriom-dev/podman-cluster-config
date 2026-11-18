@@ -10,6 +10,8 @@ The repository's NixOS module (`nixosModules.default`) runs the Node.js server i
 | HTTP/1.0, 1.1, 2, 3 | Caddy (`oriom.dev`, also plain `http://oriom.dev` without a redirect) → `127.0.0.1:3020` |
 | HTTP/0.9 | `:80` → caddy-l4 listener wrapper (`../caddy`) → PROXY v2 → `127.0.0.1:3021` |
 | CoAP | UDP `5683`, published directly (listed in `publicPortContainers`) |
+| Gopher | TCP `70` → container `7070` (no privileges needed inside) |
+| Gemini | TCP `1965`, TLS with a self-signed certificate in `/var/lib/oriom-dev/gemini`, made once (clients pin it: TOFU) |
 
 Only connections on `:80` that are not HTTP/1.x go to the HTTP/0.9 port; every other
 request, ACME HTTP-01 included, is served by Caddy as before. HTTP/0.9 over TLS is not
@@ -33,4 +35,6 @@ printf 'GET /\r\n' | nc oriom.dev 80 | head -c 200      # HTTP/0.9
 curl -0 -s http://oriom.dev/index.md | head              # HTTP/1.0 without TLS
 curl --http3 -sI https://oriom.dev/                      # HTTP/3
 coap-client -m get coap://oriom.dev/.well-known/core     # CoAP (libcoap)
+printf '/\r\n' | nc oriom.dev 70                         # Gopher
+printf 'gemini://oriom.dev/\r\n' | openssl s_client -quiet -connect oriom.dev:1965  # Gemini
 ```
