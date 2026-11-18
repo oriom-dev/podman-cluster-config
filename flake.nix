@@ -18,6 +18,9 @@
       url = "github:jphacks/sd_2607/main";
       flake = false;
     };
+
+    oriom-dev.url = "github:oriom-dev/oriom-dev";
+    oriom-dev.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs@{ self, nixpkgs, flake-utils, disko, sops-nix, ... }:

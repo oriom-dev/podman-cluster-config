@@ -15,6 +15,7 @@
     ../../containers/mosimo-web
     ../../containers/mosimo-gov-web
     ../../containers/cluster-dashboard
+    ../../containers/oriom-dev
   ];
 
   services.cluster-hello.enable = true;
@@ -27,6 +28,8 @@
   # Resource dashboard, reachable only as svc:dashboard from tag:host/tag:mobile devices.
   services.cluster-dashboard.enable = true;
   services.cluster-dashboard.tailscale.enable = true;
+  # oriom.dev: HTTP/0.9–3 and CoAP (UDP 5683).
+  services.oriom-dev.enable = true;
   # Temporary: remove after the external connectivity investigation (see its README).
   services.omni-tcp-probe.enable = true;
 
