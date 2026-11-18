@@ -18,7 +18,7 @@ request, ACME HTTP-01 included, is served by Caddy as before. HTTP/0.9 over TLS 
 routed: wrapping `:443` after `tls` would hide the `*tls.Conn` from net/http and break
 HTTP/2 for every site.
 
-The server reads `/run/cluster-dashboard/agent.sock` (group 29925) and publishes an
+The server reads `/run/cluster-agent/agent.sock` (group 29925) and publishes an
 allowlisted summary only: node names, CPU, memory, traffic, uptime, load and the names
 of running containers. No addresses, images, mounts, kernel or revision.
 

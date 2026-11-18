@@ -59,6 +59,24 @@
         "type": "github"
       }
     },
+    "flake-utils_2": {
+      "inputs": {
+        "systems": "systems_3"
+      },
+      "locked": {
+        "lastModified": 1794427683,
+        "narHash": "sha256-o7ey9gEilsxaifqJWnBDlYSKbNWYQYtKwDyXeZU2kaU=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "cd489559845d81f673a12885576016c65cbe9363",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "mosimo": {
       "flake": false,
       "locked": {
@@ -128,6 +146,27 @@
         "type": "github"
       }
     },
+    "oriom-dev": {
+      "inputs": {
+        "flake-utils": "flake-utils_2",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795025795,
+        "narHash": "sha256-KNx4ZAw8sK2jolROxDzIR5+jvI2veTvmSBXT5KYnzHM=",
+        "owner": "oriom-dev",
+        "repo": "oriom-dev",
+        "rev": "c4900452a28686c01fe3b989f393dc5c68b166a2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oriom-dev",
+        "repo": "oriom-dev",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "disko": "disko",
@@ -135,6 +174,7 @@
         "mosimo": "mosimo",
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",
+        "oriom-dev": "oriom-dev",
         "sops-nix": "sops-nix"
       }
     },
@@ -186,6 +226,21 @@
       "original": {
         "owner": "nix-systems",
         "ref": "future-26.11",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_3": {
+      "locked": {
+        "lastModified": 1791244623,
+        "narHash": "sha256-uuanbkFk8a313Zfrxdcz8Us/yQtaxNnKJtX8v0ZPpd8=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "d36eeed142f88b5a636f2e3856a53c61654cf29b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
         "repo": "default",
         "type": "github"
       }

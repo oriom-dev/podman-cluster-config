@@ -20,14 +20,14 @@
       caddyLayer4 = true;
       # Live cluster numbers: the server publishes an allowlisted summary only
       # (node names, CPU, memory, traffic, uptime, running container names).
-      agentSocket = "/run/cluster-dashboard/agent.sock";
+      agentSocket = "/run/cluster-agent/agent.sock";
       agentGid = 29925;
     };
     # CoAP, Gopher and Gemini cannot go through Caddy.
     cluster.containerPolicy.publicPortContainers = [ "oriom-dev" ];
     systemd.services.podman-oriom-dev = {
-      requires = [ "cluster-dashboard-agent.socket" ];
-      after = [ "cluster-dashboard-agent.socket" ];
+      requires = [ "cluster-agent.socket" ];
+      after = [ "cluster-agent.socket" ];
     };
   };
 }
