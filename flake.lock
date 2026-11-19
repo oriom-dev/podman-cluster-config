@@ -154,11 +154,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795073582,
-        "narHash": "sha256-cBVS6cFKRQUFVz/q2XgJcxfnT0zy5V3c8ts1ePGj7eY=",
+        "lastModified": 1795075938,
+        "narHash": "sha256-p03gHK4454nY28YoWF7afBBfkIAVyPIeq5bah2lW++k=",
         "owner": "oriom-dev",
         "repo": "oriom-dev",
-        "rev": "483f1d820e2498baa8157c67b34912b5e5788ea0",
+        "rev": "9dfd453ca346679db52544d195c091767a890d05",
         "type": "github"
       },
       "original": {
